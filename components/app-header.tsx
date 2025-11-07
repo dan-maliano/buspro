@@ -2,20 +2,13 @@ import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { LogOut, User, Bus } from "lucide-react"
-import { redirect } from "next/navigation"
+import { signOut } from "@/lib/actions/auth"
 
 export default async function AppHeader() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  async function signOut() {
-    "use server"
-    const supabase = await createClient()
-    await supabase.auth.signOut()
-    redirect("/auth/login")
-  }
 
   return (
     <header className="bg-[#124734] text-white shadow-md">

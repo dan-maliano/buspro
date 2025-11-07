@@ -4,6 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { User, Mail, Calendar, ArrowRight } from "lucide-react"
+import { signOut } from "@/lib/actions/auth"
+import AppHeader from "@/components/app-header"
+import AppFooter from "@/components/app-footer"
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -30,31 +33,11 @@ export default async function ProfilePage() {
     }).format(new Date(dateString))
   }
 
-  async function signOut() {
-    "use server"
-    const supabase = await createClient()
-    await supabase.auth.signOut()
-    redirect("/auth/login")
-  }
-
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Header */}
-      <header className="bg-[#124734] text-white shadow-md">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">הפרופיל שלי</h1>
-              <p className="text-sm opacity-90">ניהול חשבון ומידע אישי</p>
-            </div>
-            <Button asChild variant="ghost" className="text-white hover:bg-[#1a5d47]">
-              <Link href="/">חזור לדף הבית</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-surface flex flex-col">
+      <AppHeader />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-3xl mx-auto">
           {/* User Info Card */}
           <Card className="mb-6">
@@ -140,6 +123,8 @@ export default async function ProfilePage() {
           </Card>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   )
 }
