@@ -14,8 +14,7 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
     redirect("/auth/login")
   }
 
-  // Validate exam type
-  if (!["simulation", "practice", "errors"].includes(type)) {
+  if (!["simulation", "errors"].includes(type)) {
     redirect("/")
   }
 

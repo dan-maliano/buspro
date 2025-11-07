@@ -4,8 +4,8 @@ import "./globals.css"
 import CookieBanner from "@/components/cookie-banner"
 
 export const metadata: Metadata = {
-  title: "BusPro - תרגול מבחן תיאוריה לנהג אוטובוס",
-  description: "אפליקציית תרגול מבחני תיאוריה לנהג אוטובוס",
+  title: "BusPro - הכנה לתורת הרכב לנהג אוטובוס",
+  description: "אפליקציית הכנה לתורת הרכב לנהגי אוטובוס",
   manifest: "/manifest.json",
     generator: 'v0.app'
 }

@@ -5,7 +5,7 @@ import { MailCheck } from "lucide-react"
 
 export default function VerifyEmailPage() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-surface">
+    <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10 bg-surface">
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="text-center">
@@ -14,13 +14,15 @@ export default function VerifyEmailPage() {
             </div>
             <CardTitle className="text-2xl">אמת את כתובת האימייל שלך</CardTitle>
             <CardDescription className="text-base">
-              שלחנו לך קישור לאימות. אנא בדוק את תיבת הדואר שלך ולחץ על הקישור כדי להפעיל את החשבון.
+              שלחנו לך מייל אימות מ-BusPro. אנא בדוק את תיבת הדואר שלך (כולל תיקיית הספאם) ולחץ על הקישור כדי להפעיל את
+              החשבון שלך. המייל נשלח מ-BusPro דרך Supabase.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="rounded-lg bg-muted p-4 text-sm">
               <p className="text-muted-foreground">
-                <strong>שים לב:</strong> הקישור לאימות תקף ל-24 שעות. אם לא קיבלת את המייל, בדוק גם בתיקיית הספאם.
+                <strong>שים לב:</strong> הקישור לאימות תקף ל-24 שעות. אם לא קיבלת את המייל, בדוק גם בתיקיית הספאם. המייל
+                נשלח מ-BusPro.
               </p>
             </div>
             <Button asChild className="w-full bg-[#124734] hover:bg-[#0d331f]">

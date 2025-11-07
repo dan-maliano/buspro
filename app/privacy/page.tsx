@@ -1,22 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import AppHeader from "@/components/app-header"
+import AppFooter from "@/components/app-footer"
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-surface">
-      <header className="bg-[#124734] text-white shadow-md">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">מדיניות פרטיות</h1>
-            <Button asChild variant="ghost" className="text-white hover:bg-[#1a5d47]">
-              <Link href="/">חזור לדף הבית</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-surface flex flex-col">
+      <AppHeader />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardHeader>
@@ -122,6 +113,8 @@ export default function PrivacyPage() {
           </Card>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   )
 }

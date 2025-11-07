@@ -1,22 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import AppHeader from "@/components/app-header"
+import AppFooter from "@/components/app-footer"
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-surface">
-      <header className="bg-[#124734] text-white shadow-md">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">תנאי שימוש</h1>
-            <Button asChild variant="ghost" className="text-white hover:bg-[#1a5d47]">
-              <Link href="/">חזור לדף הבית</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-surface flex flex-col">
+      <AppHeader />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardHeader>
@@ -35,7 +26,7 @@ export default function TermsPage() {
               <section>
                 <h2 className="text-2xl font-bold text-[#124734] mb-3">2. שימוש במערכת</h2>
                 <p className="text-foreground-secondary leading-relaxed mb-2">
-                  מערכת BusPro מיועדת לתרגול מבחני תיאוריה לנהג אוטובוס. השימוש במערכת כפוף לכללים הבאים:
+                  מערכת BusPro מיועדת להכנה לתורת הרכב לנהג אוטובוס. השימוש במערכת כפוף לכללים הבאים:
                 </p>
                 <ul className="list-disc pr-6 space-y-2 text-foreground-secondary">
                   <li>המערכת מיועדת לשימוש אישי בלבד</li>
@@ -86,6 +77,8 @@ export default function TermsPage() {
           </Card>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   )
 }

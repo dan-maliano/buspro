@@ -1,23 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { Bus, Target, Users, Mail } from "lucide-react"
+import { Bus, Target, Mail } from "lucide-react"
+import AppHeader from "@/components/app-header"
+import AppFooter from "@/components/app-footer"
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-surface">
-      <header className="bg-[#124734] text-white shadow-md">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">אודות BusPro</h1>
-            <Button asChild variant="ghost" className="text-white hover:bg-[#1a5d47]">
-              <Link href="/">חזור לדף הבית</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-surface flex flex-col">
+      <AppHeader />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
           {/* Mission */}
           <Card className="mb-6">
@@ -29,9 +20,9 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent>
               <p className="text-lg text-foreground-secondary leading-relaxed">
-                BusPro היא מערכת תרגול מבחני תיאוריה מתקדמת לנהגי אוטובוס. המטרה שלנו היא לעזור לך להתכונן בצורה הטובה
-                ביותר למבחן התיאוריה ולעבור אותו בהצלחה. אנו מספקים תרגול מקיף, מעקב אחר התקדמות, וכלים שיעזרו לך ללמוד
-                בצורה יעילה ומותאמת אישית.
+                BusPro היא מערכת הכנה מתקדמת לתורת הרכב לנהגי אוטובוס. המטרה שלנו היא לעזור לך להתכונן בצורה הטובה ביותר
+                למבחן תורת הרכב ולעבור אותו בהצלחה. אנו מספקים תרגול מקיף, מעקב אחר התקדמות, וכלים שיעזרו לך ללמוד בצורה
+                יעילה ומותאמת אישית.
               </p>
             </CardContent>
           </Card>
@@ -53,10 +44,6 @@ export default function AboutPage() {
                   </p>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
-                  <h3 className="font-bold text-[#124734] mb-2">תרגול חופשי</h3>
-                  <p className="text-sm text-foreground-secondary">תרגול ללא הגבלת זמן בקצב שלך, מושלם לחיזוק החומר</p>
-                </div>
-                <div className="p-4 bg-muted rounded-lg">
                   <h3 className="font-bold text-[#124734] mb-2">מעקב התקדמות</h3>
                   <p className="text-sm text-foreground-secondary">סטטיסטיקות מפורטות ומעקב אחר ביצועים לפי קטגוריות</p>
                 </div>
@@ -64,23 +51,11 @@ export default function AboutPage() {
                   <h3 className="font-bold text-[#124734] mb-2">הסברים מפורטים</h3>
                   <p className="text-sm text-foreground-secondary">הסבר מפורט לכל שאלה כדי להבין את החומר לעומק</p>
                 </div>
+                <div className="p-4 bg-muted rounded-lg">
+                  <h3 className="font-bold text-[#124734] mb-2">שאלות מעודכנות</h3>
+                  <p className="text-sm text-foreground-secondary">שאלות בעברית המתאימות לתורת הרכב לנהג אוטובוס</p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Team */}
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-2">
-                <Users className="h-8 w-8 text-[#124734]" />
-                <CardTitle className="text-2xl">הצוות שלנו</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-foreground-secondary leading-relaxed">
-                אנחנו צוות של אנשי חינוך ומומחי תחבורה המחויבים לספק את הכלים הטובים ביותר לנהגי אוטובוס עתידיים. אנו
-                מעדכנים באופן קבוע את בסיס השאלות שלנו כדי להבטיח שהוא עדכני ורלוונטי למבחן התיאוריה האמיתי.
-              </p>
             </CardContent>
           </Card>
 
@@ -106,6 +81,8 @@ export default function AboutPage() {
           </Card>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   )
 }

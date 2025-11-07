@@ -57,12 +57,6 @@ export const EXAM_CONFIGS: Record<string, ExamConfig> = {
     timeLimitSeconds: 40 * 60, // 40 minutes
     passingScore: 26, // Need 26/30 correct
   },
-  practice: {
-    type: "practice",
-    totalQuestions: 15,
-    timeLimitSeconds: null, // No time limit
-    passingScore: 0, // No pass/fail
-  },
   errors: {
     type: "errors",
     totalQuestions: 10,
