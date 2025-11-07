@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { Clock, TrendingUp, Calendar } from "lucide-react"
+import { Clock, TrendingUp, Calendar, Smartphone } from "lucide-react"
 import AppHeader from "@/components/app-header"
 import AppFooter from "@/components/app-footer"
 
@@ -84,14 +84,7 @@ export default async function Page() {
 
               <Card className="opacity-75 border-2 border-dashed">
                 <CardHeader>
-                  <div className="flex justify-center gap-4 mb-2">
-                    <div className="h-10 w-10 bg-[#124734] rounded-lg flex items-center justify-center text-white text-xs font-bold">
-                      iOS
-                    </div>
-                    <div className="h-10 w-10 bg-[#124734] rounded-lg flex items-center justify-center text-white text-xs font-bold">
-                      AND
-                    </div>
-                  </div>
+                  <Smartphone className="h-10 w-10 text-[#124734] mb-2 mx-auto" />
                   <CardTitle className="text-center">אפליקציות מובייל</CardTitle>
                   <CardDescription className="text-center">
                     בקרוב תוכלו להוריד את האפליקציה ל-Android ו-iOS ולתרגל בכל מקום

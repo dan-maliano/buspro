@@ -22,7 +22,12 @@ export default async function AdminPage() {
     .select("*")
     .order("created_at", { ascending: false })
 
-  console.log("[v0] Admin fetching users:", { allUsers, usersError })
+  // Debug logging
+  if (usersError) {
+    console.error("[v0] Admin error fetching users:", usersError)
+  } else {
+    console.log("[v0] Admin successfully fetched users:", allUsers?.length || 0)
+  }
 
   const users = allUsers || []
 
@@ -89,15 +94,21 @@ export default async function AdminPage() {
             </CardHeader>
             <CardContent>
               {usersError ? (
-                <div>
-                  <p className="text-red-500">שגיאה בטעינת המשתמשים: {usersError.message}</p>
-                  <p className="text-xs text-muted-foreground mt-2">קוד שגיאה: {usersError.code}</p>
+                <div className="space-y-2">
+                  <p className="text-red-500 font-semibold">שגיאה בטעינת המשתמשים</p>
+                  <p className="text-sm text-muted-foreground">הודעה: {usersError.message}</p>
+                  {usersError.code && <p className="text-xs text-muted-foreground">קוד: {usersError.code}</p>}
+                  {usersError.hint && <p className="text-xs text-muted-foreground">עזרה: {usersError.hint}</p>}
+                  <p className="text-xs text-amber-600 mt-4">
+                    💡 אם זו בעיית הרשאות, הרץ את הסקריפט: scripts/007_admin_select_all_profiles.sql
+                  </p>
                 </div>
               ) : !users || users.length === 0 ? (
-                <div>
+                <div className="space-y-2">
                   <p className="text-muted-foreground text-center py-4">לא נמצאו משתמשים</p>
                   <p className="text-xs text-center text-muted-foreground">
-                    אם זה לא תקין, בדוק שה-RLS policies הוגדרו נכון
+                    אם זה לא תקין, ודא שהסקריפטים הרצו: scripts/003_create_profiles_trigger.sql ו-
+                    scripts/007_admin_select_all_profiles.sql
                   </p>
                 </div>
               ) : (
