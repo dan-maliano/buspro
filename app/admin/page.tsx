@@ -19,19 +19,16 @@ export default async function AdminPage() {
   }
 
   const adminClient = createAdminClient()
-  const { data: allUsers, error: usersError } = await adminClient
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false })
+  const { data: authData, error: usersError } = await adminClient.auth.admin.listUsers()
 
-  console.log("[v0] Admin query - User email:", user.email)
+  console.log("[v0] Admin query - Fetching from auth.users")
   console.log("[v0] Admin query - Results:", {
     success: !usersError,
-    count: allUsers?.length || 0,
+    count: authData?.users?.length || 0,
     error: usersError,
   })
 
-  const users = allUsers || []
+  const users = authData?.users || []
   const totalUsers = users.length
 
   // Get recent sessions (last 30 minutes) to estimate active users
@@ -100,31 +97,12 @@ export default async function AdminPage() {
                     <p>
                       <strong>הודעה:</strong> {usersError.message}
                     </p>
-                    <div className="bg-white border p-3 rounded text-sm mt-3">
-                      <p className="font-semibold mb-2">אנא צור קשר עם התמיכה הטכנית</p>
-                    </div>
                   </div>
                 </div>
               ) : users.length === 0 ? (
                 <div className="space-y-4 p-6 bg-amber-50 rounded-lg border border-amber-200 text-center">
                   <p className="text-lg font-semibold">לא נמצאו משתמשים</p>
-                  <p className="text-sm text-muted-foreground">זה יכול לקרות אם המשתמשים נוצרו לפני שהטריגר הוגדר</p>
-                  <div className="bg-white border p-4 rounded text-right text-sm mt-4">
-                    <p className="font-semibold mb-2">פתרון:</p>
-                    <ol className="list-decimal list-inside space-y-2">
-                      <li>פתח את Supabase Dashboard</li>
-                      <li>עבור ל-SQL Editor</li>
-                      <li>
-                        הרץ את הסקריפט:{" "}
-                        <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/003_create_profiles_trigger.sql</code>
-                      </li>
-                      <li>
-                        לאחר מכן הרץ:{" "}
-                        <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/008_backfill_profiles.sql</code>
-                      </li>
-                      <li>רענן את הדף</li>
-                    </ol>
-                  </div>
+                  <p className="text-sm text-muted-foreground">אין משתמשים רשומים במערכת</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -140,7 +118,7 @@ export default async function AdminPage() {
                     <tbody>
                       {users.map((userItem) => (
                         <tr key={userItem.id} className="border-b hover:bg-muted/50">
-                          <td className="p-2">{userItem.full_name || "לא צוין"}</td>
+                          <td className="p-2">{userItem.user_metadata?.full_name || "לא צוין"}</td>
                           <td className="p-2 font-mono text-sm">{userItem.email}</td>
                           <td className="p-2 text-sm text-muted-foreground">
                             {new Date(userItem.created_at).toLocaleDateString("he-IL")}
