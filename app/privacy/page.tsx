@@ -1,11 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import AppHeader from "@/components/app-header"
 import AppFooter from "@/components/app-footer"
+import { createClient } from "@/lib/supabase/server"
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <div className="min-h-screen bg-surface flex flex-col">
-      <AppHeader />
+      <AppHeader user={user} />
 
       <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">

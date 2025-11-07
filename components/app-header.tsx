@@ -1,15 +1,10 @@
-import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { LogOut, User, Bus } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 
-export default async function AppHeader() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+export default function AppHeader({ user }: { user: SupabaseUser | null }) {
   return (
     <header className="bg-[#124734] text-white shadow-md">
       <div className="container mx-auto px-4 py-6 flex items-center justify-between">

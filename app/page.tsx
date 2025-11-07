@@ -14,7 +14,7 @@ export default async function Page() {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
-      <AppHeader />
+      <AppHeader user={user} />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12 flex-1">
