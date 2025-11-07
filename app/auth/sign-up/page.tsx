@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -20,6 +21,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [fullName, setFullName] = useState("")
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -38,6 +40,12 @@ export default function SignUpPage() {
 
     if (password.length < 6) {
       setError("הסיסמה חייבת להכיל לפחות 6 תווים")
+      setIsLoading(false)
+      return
+    }
+
+    if (!acceptedTerms) {
+      setError("יש לאשר את תנאי השימוש ומדיניות הפרטיות")
       setIsLoading(false)
       return
     }
@@ -129,6 +137,31 @@ export default function SignUpPage() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="הזן סיסמה שוב"
                       />
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="terms"
+                        checked={acceptedTerms}
+                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                      />
+                      <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
+                        אני מסכים ל
+                        <Link
+                          href="/terms"
+                          target="_blank"
+                          className="text-[#124734] hover:underline font-semibold mx-1"
+                        >
+                          תנאי השימוש
+                        </Link>
+                        ול
+                        <Link
+                          href="/privacy"
+                          target="_blank"
+                          className="text-[#124734] hover:underline font-semibold mx-1"
+                        >
+                          מדיניות הפרטיות
+                        </Link>
+                      </label>
                     </div>
                     {error && (
                       <Alert variant="destructive">

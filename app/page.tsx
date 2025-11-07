@@ -38,8 +38,11 @@ export default async function Page() {
               </CardHeader>
               <CardContent>
                 <Button asChild className="w-full bg-[#124734] hover:bg-[#0d331f]">
-                  <Link href="/exam/simulation">{user ? "התחל מבחן" : "התחל מבחן (אורח)"}</Link>
+                  <Link href="/exam/simulation">{user ? "התחל מבחן" : "התחל מבחן כאורח"}</Link>
                 </Button>
+                {!user && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">* מבחן כאורח ללא שמירת נתונים</p>
+                )}
               </CardContent>
             </Card>
 

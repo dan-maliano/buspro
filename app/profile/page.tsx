@@ -19,7 +19,11 @@ export default async function ProfilePage() {
   }
 
   // Get user's exam statistics
-  const { data: sessions } = await supabase.from("exam_sessions").select("*").eq("user_id", user.id)
+  const { data: sessions } = await supabase
+    .from("exam_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("completed", true)
 
   const totalExams = sessions?.length || 0
   const simulationExams = sessions?.filter((s) => s.exam_type === "simulation") || []
