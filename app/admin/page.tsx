@@ -13,19 +13,31 @@ export default async function AdminPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Check if user is admin
   if (!user || user.email !== "dbm1000000@gmail.com") {
     redirect("/")
   }
 
-  // Get all users from profiles table
-  const { data: profiles, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false })
+  const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
+
+  // Get profiles data
+  const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false })
+
+  // Merge auth users with profiles
+  const allUsers =
+    authUsers?.users.map((authUser) => {
+      const profile = profiles?.find((p) => p.id === authUser.id)
+      return {
+        id: authUser.id,
+        email: authUser.email || "",
+        full_name: profile?.full_name || authUser.user_metadata?.full_name || "לא צוין",
+        created_at: authUser.created_at,
+      }
+    }) || []
 
   // Get exam sessions count for online/active users estimation
-  const { count: totalUsers } = await supabase.from("profiles").select("*", { count: "exact", head: true })
+  const { count: totalUsers } = await supabase.auth.admin
+    .listUsers()
+    .then((res) => ({ count: res.data?.users.length || 0 }))
 
   // Get recent sessions (last 30 minutes) to estimate active users
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
@@ -83,9 +95,9 @@ export default async function AdminPage() {
               <CardDescription>רשימת כל המשתמשים במערכת</CardDescription>
             </CardHeader>
             <CardContent>
-              {error ? (
-                <p className="text-red-500">שגיאה בטעינת המשתמשים: {error.message}</p>
-              ) : !profiles || profiles.length === 0 ? (
+              {authError ? (
+                <p className="text-red-500">שגיאה בטעינת המשתמשים: {authError.message}</p>
+              ) : !allUsers || allUsers.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">אין משתמשים במערכת</p>
               ) : (
                 <div className="overflow-x-auto">
@@ -99,17 +111,19 @@ export default async function AdminPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {profiles.map((profile) => (
-                        <tr key={profile.id} className="border-b hover:bg-muted/50">
-                          <td className="p-2">{profile.full_name || "לא צוין"}</td>
-                          <td className="p-2 font-mono text-sm">{profile.email}</td>
+                      {allUsers.map((userItem) => (
+                        <tr key={userItem.id} className="border-b hover:bg-muted/50">
+                          <td className="p-2">{userItem.full_name}</td>
+                          <td className="p-2 font-mono text-sm">{userItem.email}</td>
                           <td className="p-2 text-sm text-muted-foreground">
-                            {new Date(profile.created_at).toLocaleDateString("he-IL")}
+                            {new Date(userItem.created_at).toLocaleDateString("he-IL")}
                           </td>
                           <td className="p-2">
-                            {profile.email !== "dbm1000000@gmail.com" && (
+                            {userItem.email === "dbm1000000@gmail.com" ? (
+                              <span className="text-xs text-muted-foreground">אדמין</span>
+                            ) : (
                               <form action={deleteUser}>
-                                <input type="hidden" name="userId" value={profile.id} />
+                                <input type="hidden" name="userId" value={userItem.id} />
                                 <Button type="submit" variant="destructive" size="sm" className="gap-2">
                                   <Trash2 className="h-4 w-4" />
                                   מחק
