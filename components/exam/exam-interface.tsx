@@ -43,7 +43,10 @@ export default function ExamInterface({
   // Initialize exam session
   useEffect(() => {
     async function initSession() {
-      if (!userId) return
+      if (!userId) {
+        console.log("[v0] Guest mode - no session created")
+        return
+      }
 
       const supabase = createClient()
       const { data, error } = await supabase
@@ -60,6 +63,7 @@ export default function ExamInterface({
       if (error) {
         console.error("[v0] Failed to create exam session:", error)
       } else {
+        console.log("[v0] Session created:", data.id)
         setSessionId(data.id)
       }
     }
@@ -147,9 +151,12 @@ export default function ExamInterface({
             end_time: new Date().toISOString(),
             score: correctCount,
             passed: examConfig.type === "simulation" ? passed : null,
+            completed: true, // Explicitly mark as completed
           })
           .eq("id", sessionId)
       }
+    } else {
+      console.log("[v0] Guest exam completed - results not saved")
     }
 
     setIsExamComplete(true)
@@ -304,18 +311,18 @@ export default function ExamInterface({
   return (
     <div className="min-h-screen bg-surface">
       {!userId && (
-        <Alert className="container mx-auto px-4 mt-4">
+        <Alert className="container mx-auto px-4 mt-4 border-[#124734]">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            אתה עושה את המבחן כאורח - התוצאות לא יישמרו.{" "}
-            <a href="/auth/login" className="underline font-semibold">
+            <strong>מבחן כאורח:</strong> אתה עושה את המבחן بدون חשבון. התוצאות והסטטיסטיקות לא יישמרו.{" "}
+            <a href="/auth/login" className="underline font-semibold text-[#124734]">
               התחבר
             </a>{" "}
             או{" "}
-            <a href="/auth/sign-up" className="underline font-semibold">
+            <a href="/auth/sign-up" className="underline font-semibold text-[#124734]">
               הירשם
             </a>{" "}
-            כדי לשמור את ההתקדמות.
+            כדי לשמור את ההתקדמות ולעקוב אחר השיפור שלך.
           </AlertDescription>
         </Alert>
       )}

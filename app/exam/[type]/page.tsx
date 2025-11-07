@@ -11,12 +11,14 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
     data: { user },
   } = await supabase.auth.getUser()
 
-  // if (!user) {
-  //   redirect("/auth/login")
-  // }
+  // Guest users (user = null) are now allowed to take exams without saving data
 
   if (!["simulation", "errors"].includes(type)) {
     redirect("/")
+  }
+
+  if (type === "errors" && !user) {
+    redirect("/auth/login")
   }
 
   const examConfig = EXAM_CONFIGS[type]
