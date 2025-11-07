@@ -17,10 +17,13 @@ export default async function AdminPage() {
     redirect("/")
   }
 
-  const { data: allUsers, error: usersError } = await supabase.rpc("get_all_users_admin")
+  const { data: allUsers, error: usersError } = await supabase
+    .from("profiles")
+    .select("id, email, full_name, created_at")
+    .order("created_at", { ascending: false })
 
-  console.log("[v0] Admin function call - User email:", user.email)
-  console.log("[v0] Admin function call - Results:", {
+  console.log("[v0] Admin query - User email:", user.email)
+  console.log("[v0] Admin query - Results:", {
     success: !usersError,
     count: allUsers?.length || 0,
     error: usersError,
@@ -101,9 +104,9 @@ export default async function AdminPage() {
                         <li>גש ל-Supabase Dashboard → SQL Editor</li>
                         <li>
                           הרץ את הסקריפט:{" "}
-                          <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/010_create_admin_function.sql</code>
+                          <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/011_complete_admin_setup.sql</code>
                         </li>
-                        <li>וודא שהסקריפט הדפיס "Function created successfully!"</li>
+                        <li>וודא שהסקריפט הראה הודעות הצלחה</li>
                         <li>רענן את הדף</li>
                       </ol>
                     </div>
@@ -111,21 +114,20 @@ export default async function AdminPage() {
                 </div>
               ) : users.length === 0 ? (
                 <div className="space-y-4 p-6 bg-amber-50 rounded-lg border border-amber-200 text-center">
-                  <p className="text-lg font-semibold">⚠️ לא נמצאו משתמשים</p>
-                  <div className="bg-white border p-4 rounded text-right text-sm">
-                    <p className="font-semibold mb-2">🔧 שני צעדים לתיקון:</p>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="font-semibold">1. מלא את טבלת profiles:</p>
-                        <code className="block bg-gray-100 p-2 rounded my-1">scripts/008_backfill_profiles.sql</code>
-                      </div>
-                      <div>
-                        <p className="font-semibold">2. צור את הפונקציה לאדמין:</p>
-                        <code className="block bg-gray-100 p-2 rounded my-1">
-                          scripts/010_create_admin_function.sql
-                        </code>
-                      </div>
-                    </div>
+                  <p className="text-lg font-semibold">⚠️ לא נמצאו משתמשים בטבלת profiles</p>
+                  <p className="text-sm text-muted-foreground">זה יכול לקרות אם המשתמשים נוצרו לפני שהטריגר הוגדר</p>
+                  <div className="bg-white border p-4 rounded text-right text-sm mt-4">
+                    <p className="font-semibold mb-2">🔧 פתרון:</p>
+                    <ol className="list-decimal list-inside space-y-2">
+                      <li>פתח את Supabase Dashboard</li>
+                      <li>עבור ל-SQL Editor</li>
+                      <li>
+                        הרץ את הסקריפט:{" "}
+                        <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/011_complete_admin_setup.sql</code>
+                      </li>
+                      <li>הסקריפט ימלא את טבלת profiles ממשתמשי auth.users</li>
+                      <li>רענן את הדף</li>
+                    </ol>
                   </div>
                 </div>
               ) : (
