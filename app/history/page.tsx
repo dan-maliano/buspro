@@ -6,6 +6,7 @@ import Link from "next/link"
 import { CheckCircle2, XCircle, TrendingUp, Calendar, ArrowRight, BarChart3, AlertTriangle } from "lucide-react"
 import AppHeader from "@/components/app-header"
 import AppFooter from "@/components/app-footer"
+import { DeleteExamButton } from "@/components/delete-exam-button"
 
 export default async function HistoryPage() {
   const supabase = await createClient()
@@ -21,6 +22,7 @@ export default async function HistoryPage() {
     .from("exam_sessions")
     .select("*")
     .eq("user_id", user.id)
+    .eq("completed", true)
     .not("end_time", "is", null)
     .order("created_at", { ascending: false })
 
@@ -209,42 +211,50 @@ export default async function HistoryPage() {
                     const isPassed = session.passed
 
                     return (
-                      <Link key={session.id} href={`/history/${session.id}`} className="block">
-                        <div className="p-4 rounded-lg border-2 border-border hover:border-[#124734] transition-all">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className="font-semibold text-lg">{getExamTypeLabel(session.exam_type)}</span>
-                                {isPassed === true && (
-                                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                                    עבר
-                                  </span>
-                                )}
-                                {isPassed === false && (
-                                  <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
-                                    נכשל
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  {formatDate(session.created_at)}
+                      <div
+                        key={session.id}
+                        className="p-4 rounded-lg border-2 border-border hover:border-[#124734] transition-all"
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <Link href={`/history/${session.id}`} className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="font-semibold text-lg">{getExamTypeLabel(session.exam_type)}</span>
+                              {isPassed === true && (
+                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                                  עבר
                                 </span>
-                                <span className="flex items-center gap-1">
-                                  {isPassed ? (
-                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                  ) : (
-                                    <XCircle className="h-4 w-4 text-red-600" />
-                                  )}
-                                  {score}/{total} ({percentage}%)
+                              )}
+                              {isPassed === false && (
+                                <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                                  נכשל
                                 </span>
-                              </div>
+                              )}
                             </div>
-                            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                {formatDate(session.created_at)}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                {isPassed ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <XCircle className="h-4 w-4 text-red-600" />
+                                )}
+                                {score}/{total} ({percentage}%)
+                              </span>
+                            </div>
+                          </Link>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {isPassed === false && <DeleteExamButton sessionId={session.id} />}
+                            <Link href={`/history/${session.id}`}>
+                              <Button variant="ghost" size="icon">
+                                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                              </Button>
+                            </Link>
                           </div>
                         </div>
-                      </Link>
+                      </div>
                     )
                   })}
                 </div>
