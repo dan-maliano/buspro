@@ -21,7 +21,7 @@ export default function AppHeader({ user }: { user: SupabaseUser | null }) {
               <Bus className="h-8 w-8" />
               <h1 className="text-2xl font-bold">BusPro</h1>
             </div>
-            <p className="text-xs opacity-90">הכנה לתורת הרכב לנהג אוטובוס</p>
+            <p className="text-xs opacity-90">מערכת תרגול לתורת הרכב</p>
           </Link>
 
           {/* Desktop Menu */}

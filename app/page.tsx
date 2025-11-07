@@ -34,7 +34,7 @@ export default async function Page() {
               <CardHeader>
                 <Clock className="h-10 w-10 text-[#124734] mb-2" />
                 <CardTitle>מבחן סימולציה</CardTitle>
-                <CardDescription>30 שאלות, 45 דקות - כמו במבחן האמיתי</CardDescription>
+                <CardDescription>30 שאלות, 45 דקות</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild className="w-full bg-[#124734] hover:bg-[#0d331f]">
@@ -87,7 +87,7 @@ export default async function Page() {
                   <Smartphone className="h-10 w-10 text-[#124734] mb-2 mx-auto" />
                   <CardTitle className="text-center">אפליקציות מובייל</CardTitle>
                   <CardDescription className="text-center">
-                    בקרוב תוכלו להוריד את האפליקציה ל-Android ו-iOS ולתרגל בכל מקום
+                    בקרוב יתאפשר להוריד את האפליקציה ל-Android ו-iOS ולתרגל בכל מקום
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">

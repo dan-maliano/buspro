@@ -2,7 +2,7 @@ import { z } from "zod"
 
 export const registerSchema = z.object({
   email: z.string().email("כתובת אימייל לא תקינה"),
-  password: z.string().min(8, "הסיסמה חייבת להכיל לפחות 8 תווים"),
+  password: z.string().min(8, "הסיסמה חייבת לה��יל לפחות 8 תווים"),
   agreedToTerms: z.boolean().refine((val) => val === true, {
     message: "יש להסכים לתנאי השימוש",
   }),
