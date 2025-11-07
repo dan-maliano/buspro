@@ -66,20 +66,49 @@ export default async function Page() {
 
           <div className="mb-12">
             <h3 className="text-2xl font-bold text-[#124734] mb-6 text-center">בקרוב באתר</h3>
-            <Card className="opacity-75 border-2 border-dashed">
-              <CardHeader>
-                <Calendar className="h-10 w-10 text-[#124734] mb-2 mx-auto" />
-                <CardTitle className="text-center">מבחני תיאוריה לאוטובוס</CardTitle>
-                <CardDescription className="text-center">
-                  בקרוב יתווספו מבחני תיאוריה מלאים לאוטובוס עם עוד תכנים ושאלות מגוונות
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button disabled className="w-full bg-muted text-muted-foreground cursor-not-allowed">
-                  בקרוב...
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="opacity-75 border-2 border-dashed">
+                <CardHeader>
+                  <Calendar className="h-10 w-10 text-[#124734] mb-2 mx-auto" />
+                  <CardTitle className="text-center">מבחני תיאוריה לאוטובוס</CardTitle>
+                  <CardDescription className="text-center">
+                    בקרוב יתווספו מבחני תיאוריה מלאים לאוטובוס עם עוד תכנים ושאלות מגוונות
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button disabled className="w-full bg-muted text-muted-foreground cursor-not-allowed">
+                    בקרוב...
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="opacity-75 border-2 border-dashed">
+                <CardHeader>
+                  <div className="flex justify-center gap-4 mb-2">
+                    <div className="h-10 w-10 bg-[#124734] rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                      iOS
+                    </div>
+                    <div className="h-10 w-10 bg-[#124734] rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                      AND
+                    </div>
+                  </div>
+                  <CardTitle className="text-center">אפליקציות מובייל</CardTitle>
+                  <CardDescription className="text-center">
+                    בקרוב תוכלו להוריד את האפליקציה ל-Android ו-iOS ולתרגל בכל מקום
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button disabled className="w-full bg-muted text-muted-foreground cursor-not-allowed">
+                    <span className="ml-2">📱</span>
+                    הורד ל-Android - בקרוב
+                  </Button>
+                  <Button disabled className="w-full bg-muted text-muted-foreground cursor-not-allowed">
+                    <span className="ml-2">🍎</span>
+                    הורד ל-iOS - בקרוב
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* Features Section */}

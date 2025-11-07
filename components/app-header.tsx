@@ -78,66 +78,122 @@ export default function AppHeader({ user }: { user: SupabaseUser | null }) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 flex flex-col gap-2 border-t border-white/20 pt-4">
+          <div className="md:hidden mt-4 pb-4 border-t border-white/20 pt-4">
             {user ? (
-              <>
-                {isAdmin && (
-                  <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
+              <div className="space-y-4">
+                {/* Navigation Section */}
+                <div className="space-y-1">
+                  <p className="text-xs text-white/60 font-semibold px-2 mb-2">ניווט</p>
+                  <Link href="/" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                      <Shield className="ml-2 h-4 w-4" />
-                      ניהול
+                      🏠 עמוד הבית
                     </Button>
                   </Link>
+                  <Link href="/exam/simulation" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      📝 התחל מבחן
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* User Section */}
+                <div className="space-y-1 border-t border-white/20 pt-3">
+                  <p className="text-xs text-white/60 font-semibold px-2 mb-2">חשבון</p>
+                  <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      <User className="ml-2 h-4 w-4" />
+                      הפרופיל שלי
+                    </Button>
+                  </Link>
+                  <Link href="/history" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      📊 היסטוריה וסטטיסטיקות
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Admin Section */}
+                {isAdmin && (
+                  <div className="space-y-1 border-t border-white/20 pt-3">
+                    <p className="text-xs text-white/60 font-semibold px-2 mb-2">ניהול</p>
+                    <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                        <Shield className="ml-2 h-4 w-4" />
+                        פאנל ניהול
+                      </Button>
+                    </Link>
+                  </div>
                 )}
-                <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                    עמוד הבית
-                  </Button>
-                </Link>
-                <Link href="/history" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                    היסטוריה
-                  </Button>
-                </Link>
-                <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                    <User className="ml-2 h-4 w-4" />
-                    פרופיל
-                  </Button>
-                </Link>
-                <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                    אודות
-                  </Button>
-                </Link>
-                <form action={signOut} className="w-full">
-                  <Button type="submit" variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                    <LogOut className="ml-2 h-4 w-4" />
-                    התנתק
-                  </Button>
-                </form>
-              </>
+
+                {/* Info Section */}
+                <div className="space-y-1 border-t border-white/20 pt-3">
+                  <p className="text-xs text-white/60 font-semibold px-2 mb-2">מידע</p>
+                  <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      ℹ️ אודות
+                    </Button>
+                  </Link>
+                  <Link href="/terms" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      📄 תנאי שימוש
+                    </Button>
+                  </Link>
+                  <Link href="/privacy" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      🔒 מדיניות פרטיות
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Logout */}
+                <div className="border-t border-white/20 pt-3">
+                  <form action={signOut} className="w-full">
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      className="w-full text-white hover:bg-red-600/20 justify-start"
+                    >
+                      <LogOut className="ml-2 h-4 w-4" />
+                      התנתק
+                    </Button>
+                  </form>
+                </div>
+              </div>
             ) : (
-              <>
-                <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                    עמוד הבית
-                  </Button>
-                </Link>
-                <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                    אודות
-                  </Button>
-                </Link>
-                <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
-                    התחבר
-                  </Button>
-                </Link>
-                <Link href="/auth/sign-up" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full bg-white text-[#124734] hover:bg-gray-100">הרשם</Button>
-                </Link>
-              </>
+              <div className="space-y-4">
+                {/* Navigation for guests */}
+                <div className="space-y-1">
+                  <p className="text-xs text-white/60 font-semibold px-2 mb-2">ניווט</p>
+                  <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      🏠 עמוד הבית
+                    </Button>
+                  </Link>
+                  <Link href="/exam/simulation" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      📝 מבחן כאורח
+                    </Button>
+                  </Link>
+                  <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      ℹ️ אודות
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Auth Section */}
+                <div className="space-y-2 border-t border-white/20 pt-3">
+                  <p className="text-xs text-white/60 font-semibold px-2 mb-2">חשבון</p>
+                  <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-white hover:bg-[#1a5d47] justify-start">
+                      🔑 התחבר
+                    </Button>
+                  </Link>
+                  <Link href="/auth/sign-up" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-white text-[#124734] hover:bg-gray-100">✨ הרשם עכשיו</Button>
+                  </Link>
+                </div>
+              </div>
             )}
           </div>
         )}

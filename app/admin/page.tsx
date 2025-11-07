@@ -17,34 +17,25 @@ export default async function AdminPage() {
     redirect("/")
   }
 
-  const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
+  const { data: allUsers, error: usersError } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false })
 
-  // Get profiles data
-  const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false })
+  const users = allUsers || []
 
-  // Merge auth users with profiles
-  const allUsers =
-    authUsers?.users.map((authUser) => {
-      const profile = profiles?.find((p) => p.id === authUser.id)
-      return {
-        id: authUser.id,
-        email: authUser.email || "",
-        full_name: profile?.full_name || authUser.user_metadata?.full_name || "לא צוין",
-        created_at: authUser.created_at,
-      }
-    }) || []
-
-  // Get exam sessions count for online/active users estimation
-  const { count: totalUsers } = await supabase.auth.admin
-    .listUsers()
-    .then((res) => ({ count: res.data?.users.length || 0 }))
+  // Get exam sessions count
+  const { count: totalUsers } = await supabase.from("profiles").select("*", { count: "exact", head: true })
 
   // Get recent sessions (last 30 minutes) to estimate active users
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-  const { count: activeUsers } = await supabase
+  const { data: recentSessions } = await supabase
     .from("exam_sessions")
-    .select("user_id", { count: "exact", head: true })
+    .select("user_id")
     .gte("created_at", thirtyMinutesAgo)
+
+  // Count unique users
+  const activeUsers = new Set(recentSessions?.map((s) => s.user_id) || []).size
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -82,7 +73,7 @@ export default async function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {totalUsers ? Math.round(((activeUsers || 0) / totalUsers) * 100) : 0}%
+                  {totalUsers ? Math.round((activeUsers / (totalUsers || 1)) * 100) : 0}%
                 </div>
               </CardContent>
             </Card>
@@ -95,9 +86,9 @@ export default async function AdminPage() {
               <CardDescription>רשימת כל המשתמשים במערכת</CardDescription>
             </CardHeader>
             <CardContent>
-              {authError ? (
-                <p className="text-red-500">שגיאה בטעינת המשתמשים: {authError.message}</p>
-              ) : !allUsers || allUsers.length === 0 ? (
+              {usersError ? (
+                <p className="text-red-500">שגיאה בטעינת המשתמשים: {usersError.message}</p>
+              ) : !users || users.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">אין משתמשים במערכת</p>
               ) : (
                 <div className="overflow-x-auto">
@@ -111,16 +102,18 @@ export default async function AdminPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {allUsers.map((userItem) => (
+                      {users.map((userItem) => (
                         <tr key={userItem.id} className="border-b hover:bg-muted/50">
-                          <td className="p-2">{userItem.full_name}</td>
+                          <td className="p-2">{userItem.full_name || "לא צוין"}</td>
                           <td className="p-2 font-mono text-sm">{userItem.email}</td>
                           <td className="p-2 text-sm text-muted-foreground">
                             {new Date(userItem.created_at).toLocaleDateString("he-IL")}
                           </td>
                           <td className="p-2">
                             {userItem.email === "dbm1000000@gmail.com" ? (
-                              <span className="text-xs text-muted-foreground">אדמין</span>
+                              <span className="text-xs text-muted-foreground bg-yellow-100 px-2 py-1 rounded">
+                                אדמין
+                              </span>
                             ) : (
                               <form action={deleteUser}>
                                 <input type="hidden" name="userId" value={userItem.id} />
