@@ -3,7 +3,9 @@ import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { CheckCircle2, XCircle, TrendingUp, Calendar, ArrowRight, BarChart3 } from "lucide-react"
+import { CheckCircle2, XCircle, TrendingUp, Calendar, ArrowRight, BarChart3, AlertTriangle } from "lucide-react"
+import AppHeader from "@/components/app-header"
+import AppFooter from "@/components/app-footer"
 
 export default async function HistoryPage() {
   const supabase = await createClient()
@@ -15,14 +17,14 @@ export default async function HistoryPage() {
     redirect("/auth/login")
   }
 
-  // Fetch all exam sessions
   const { data: sessions } = await supabase
     .from("exam_sessions")
     .select("*")
     .eq("user_id", user.id)
+    .not("end_time", "is", null)
     .order("created_at", { ascending: false })
 
-  // Calculate statistics
+  // Calculate statistics only from completed exams
   const totalExams = sessions?.length || 0
   const simulationExams = sessions?.filter((s) => s.exam_type === "simulation") || []
   const passedExams = simulationExams.filter((s) => s.passed === true).length
@@ -55,6 +57,14 @@ export default async function HistoryPage() {
     }
   })
 
+  const { data: wrongAnswers } = await supabase
+    .from("user_answers")
+    .select("question_id")
+    .eq("is_correct", false)
+    .in("session_id", sessions?.map((s) => s.id) || [])
+
+  const uniqueWrongQuestions = new Set(wrongAnswers?.map((a) => a.question_id) || []).size
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return new Intl.DateTimeFormat("he-IL", {
@@ -70,8 +80,6 @@ export default async function HistoryPage() {
     switch (type) {
       case "simulation":
         return "מבחן סימולציה"
-      case "practice":
-        return "תרגול חופשי"
       case "errors":
         return "תרגול טעויות"
       default:
@@ -80,24 +88,34 @@ export default async function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Header */}
-      <header className="bg-[#124734] text-white shadow-md">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">היסטוריה וסטטיסטיקות</h1>
-              <p className="text-sm opacity-90">עקוב אחר ההתקדמות שלך</p>
-            </div>
-            <Button asChild variant="ghost" className="text-white hover:bg-[#1a5d47]">
-              <Link href="/">חזור לדף הבית</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-surface flex flex-col">
+      <AppHeader />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-[#124734] mb-8">היסטוריה וסטטיסטיקות</h1>
+
+          {uniqueWrongQuestions > 0 && (
+            <Card className="mb-8 border-orange-200 bg-orange-50">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-8 w-8 text-orange-600" />
+                  <div>
+                    <CardTitle className="text-orange-900">תרגול שאלות שגויות</CardTitle>
+                    <CardDescription className="text-orange-700">
+                      יש לך {uniqueWrongQuestions} שאלות שטעית בהן - תרגל אותן שוב!
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Button asChild className="bg-orange-600 hover:bg-orange-700">
+                  <Link href="/exam/errors">התחל תרגול טעויות</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Statistics Overview */}
           <div className="grid md:grid-cols-4 gap-4 mb-8">
             <Card>
@@ -244,6 +262,8 @@ export default async function HistoryPage() {
           </Card>
         </div>
       </main>
+
+      <AppFooter />
     </div>
   )
 }

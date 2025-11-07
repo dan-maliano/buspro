@@ -9,6 +9,7 @@ import { Clock, CheckCircle2, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import ExamResults from "./exam-results"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 type UserAnswerState = {
   questionId: string
@@ -23,7 +24,7 @@ export default function ExamInterface({
 }: {
   questions: Question[]
   examConfig: ExamConfig
-  userId: string
+  userId: string | null
 }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [userAnswers, setUserAnswers] = useState<UserAnswerState[]>(
@@ -42,6 +43,8 @@ export default function ExamInterface({
   // Initialize exam session
   useEffect(() => {
     async function initSession() {
+      if (!userId) return
+
       const supabase = createClient()
       const { data, error } = await supabase
         .from("exam_sessions")
@@ -109,41 +112,45 @@ export default function ExamInterface({
   }
 
   const handleSubmitExam = async () => {
-    if (isSubmitting || !sessionId) return
+    if (isSubmitting) return
     setIsSubmitting(true)
 
-    const supabase = createClient()
+    if (userId && sessionId) {
+      const supabase = createClient()
 
-    // Calculate score
-    let correctCount = 0
-    const answerRecords = questions.map((q, index) => {
-      const userAnswer = userAnswers[index]
-      const isCorrect = userAnswer.selectedAnswer === q.correct_answer
-      if (isCorrect) correctCount++
+      // Calculate score
+      let correctCount = 0
+      const answerRecords = questions.map((q, index) => {
+        const userAnswer = userAnswers[index]
+        const isCorrect = userAnswer.selectedAnswer === q.correct_answer
+        if (isCorrect) correctCount++
 
-      return {
-        session_id: sessionId,
-        question_id: q.id,
-        user_answer: userAnswer.selectedAnswer || "A",
-        is_correct: isCorrect,
-        time_spent_seconds: userAnswer.timeSpent,
-      }
-    })
-
-    const passed = correctCount >= examConfig.passingScore
-
-    // Insert all answers
-    await supabase.from("user_answers").insert(answerRecords)
-
-    // Update session
-    await supabase
-      .from("exam_sessions")
-      .update({
-        end_time: new Date().toISOString(),
-        score: correctCount,
-        passed: examConfig.type === "simulation" ? passed : null,
+        return {
+          session_id: sessionId,
+          question_id: q.id,
+          user_answer: userAnswer.selectedAnswer || "A",
+          is_correct: isCorrect,
+          time_spent_seconds: userAnswer.timeSpent,
+        }
       })
-      .eq("id", sessionId)
+
+      const passed = correctCount >= examConfig.passingScore
+
+      // Insert all answers
+      await supabase.from("user_answers").insert(answerRecords)
+
+      const allAnswered = userAnswers.every((a) => a.selectedAnswer !== null)
+      if (allAnswered) {
+        await supabase
+          .from("exam_sessions")
+          .update({
+            end_time: new Date().toISOString(),
+            score: correctCount,
+            passed: examConfig.type === "simulation" ? passed : null,
+          })
+          .eq("id", sessionId)
+      }
+    }
 
     setIsExamComplete(true)
   }
@@ -158,11 +165,161 @@ export default function ExamInterface({
     return <ExamResults sessionId={sessionId} />
   }
 
+  if (isExamComplete && !sessionId) {
+    // Calculate score for guest
+    let correctCount = 0
+    const resultsData = questions.map((q, index) => {
+      const userAnswer = userAnswers[index]
+      const isCorrect = userAnswer.selectedAnswer === q.correct_answer
+      if (isCorrect) correctCount++
+      return {
+        question: q,
+        userAnswer: userAnswer.selectedAnswer || "A",
+        isCorrect,
+      }
+    })
+
+    const percentage = Math.round((correctCount / questions.length) * 100)
+    const passed = correctCount >= examConfig.passingScore
+
+    return (
+      <div className="min-h-screen bg-surface">
+        <header className="bg-[#124734] text-white shadow-md">
+          <div className="container mx-auto px-4 py-6">
+            <h1 className="text-3xl font-bold text-center">תוצאות המבחן</h1>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            {/* Guest Notice */}
+            <Alert className="mb-6 border-[#124734]">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                ביצעת את המבחן כאורח. התוצאות לא נשמרו. <strong>הירשם או התחבר</strong> כדי לשמור את ההתקדמות שלך ולעקוב
+                אחר הסטטיסטיקות.
+              </AlertDescription>
+            </Alert>
+
+            {/* Summary Card */}
+            <Card className={`mb-8 ${passed ? "border-green-500 border-2" : "border-red-500 border-2"}`}>
+              <CardHeader>
+                <div className="text-center">
+                  {passed ? (
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                      <CheckCircle2 className="h-16 w-16 text-green-500" />
+                      <h2 className="text-3xl font-bold text-green-600">עברת בהצלחה!</h2>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                      <AlertCircle className="h-16 w-16 text-red-500" />
+                      <h2 className="text-3xl font-bold text-red-600">לא עברת הפעם</h2>
+                    </div>
+                  )}
+                </div>
+                <CardTitle className="text-center">
+                  <div className="text-6xl font-bold text-[#124734] mb-2">
+                    {correctCount}/{questions.length}
+                  </div>
+                  <div className="text-2xl text-muted-foreground">{percentage}% נכון</div>
+                </CardTitle>
+              </CardHeader>
+            </Card>
+
+            {/* Question Review */}
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>סקירת שאלות</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {resultsData.map((result, index) => (
+                    <div
+                      key={index}
+                      className={`p-4 rounded-lg border-2 ${
+                        result.isCorrect ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0">
+                          {result.isCorrect ? (
+                            <CheckCircle2 className="h-6 w-6 text-green-600" />
+                          ) : (
+                            <AlertCircle className="h-6 w-6 text-red-600" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold mb-2">
+                            {index + 1}. {result.question.question_text}
+                          </p>
+                          <div className="space-y-1 text-sm">
+                            <p>
+                              <span className="text-muted-foreground">התשובה שלך:</span>{" "}
+                              <span
+                                className={
+                                  result.isCorrect ? "text-green-600 font-semibold" : "text-red-600 font-semibold"
+                                }
+                              >
+                                {result.userAnswer}
+                              </span>
+                            </p>
+                            {!result.isCorrect && (
+                              <p>
+                                <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
+                                <span className="text-green-600 font-semibold">{result.question.correct_answer}</span>
+                              </p>
+                            )}
+                            {result.question.explanation && (
+                              <p className="mt-2 p-3 bg-white rounded border">
+                                <span className="font-semibold">הסבר:</span> {result.question.explanation}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button asChild className="flex-1 bg-[#124734] hover:bg-[#0d331f]" size="lg">
+                <a href="/">חזור לדף הבית</a>
+              </Button>
+              <Button asChild variant="outline" className="flex-1 bg-transparent" size="lg">
+                <a href="/auth/sign-up">הירשם לשמירת התקדמות</a>
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   const answeredCount = userAnswers.filter((a) => a.selectedAnswer !== null).length
   const progressPercent = (answeredCount / questions.length) * 100
 
   return (
     <div className="min-h-screen bg-surface">
+      {!userId && (
+        <Alert className="container mx-auto px-4 mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            אתה עושה את המבחן כאורח - התוצאות לא יישמרו.{" "}
+            <a href="/auth/login" className="underline font-semibold">
+              התחבר
+            </a>{" "}
+            או{" "}
+            <a href="/auth/sign-up" className="underline font-semibold">
+              הירשם
+            </a>{" "}
+            כדי לשמור את ההתקדמות.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header */}
       <header className="bg-[#124734] text-white shadow-md sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
@@ -170,7 +327,6 @@ export default function ExamInterface({
             <div>
               <h1 className="text-2xl font-bold">
                 {examConfig.type === "simulation" && "מבחן סימולציה"}
-                {examConfig.type === "practice" && "תרגול חופשי"}
                 {examConfig.type === "errors" && "תרגול טעויות"}
               </h1>
               <p className="text-sm opacity-90">

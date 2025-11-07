@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { Clock, TrendingUp } from "lucide-react"
+import { Clock, TrendingUp, Calendar } from "lucide-react"
 import AppHeader from "@/components/app-header"
 import AppFooter from "@/components/app-footer"
 
@@ -34,13 +34,11 @@ export default async function Page() {
               <CardHeader>
                 <Clock className="h-10 w-10 text-[#124734] mb-2" />
                 <CardTitle>מבחן סימולציה</CardTitle>
-                <CardDescription>30 שאלות, 40 דקות - כמו במבחן האמיתי</CardDescription>
+                <CardDescription>30 שאלות, 45 דקות - כמו במבחן האמיתי</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild className="w-full bg-[#124734] hover:bg-[#0d331f]">
-                  <Link href={user ? "/exam/simulation" : "/auth/login"}>
-                    {user ? "התחל מבחן" : "התחבר כדי להתחיל"}
-                  </Link>
+                  <Link href="/exam/simulation">{user ? "התחל מבחן" : "התחל מבחן (אורח)"}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -58,6 +56,24 @@ export default async function Page() {
                   className="w-full border-[#124734] text-[#124734] hover:bg-[#124734] hover:text-white bg-transparent"
                 >
                   <Link href={user ? "/history" : "/auth/login"}>{user ? "צפה בהיסטוריה" : "התחבר לצפייה"}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold text-[#124734] mb-6 text-center">בקרוב באתר</h3>
+            <Card className="opacity-75 border-2 border-dashed">
+              <CardHeader>
+                <Calendar className="h-10 w-10 text-[#124734] mb-2 mx-auto" />
+                <CardTitle className="text-center">מבחני תיאוריה לאוטובוס</CardTitle>
+                <CardDescription className="text-center">
+                  בקרוב יתווספו מבחני תיאוריה מלאים לאוטובוס עם עוד תכנים ושאלות מגוונות
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button disabled className="w-full bg-muted text-muted-foreground cursor-not-allowed">
+                  בקרוב...
                 </Button>
               </CardContent>
             </Card>

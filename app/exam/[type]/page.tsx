@@ -10,9 +10,10 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) {
-    redirect("/auth/login")
-  }
+
+  // if (!user) {
+  //   redirect("/auth/login")
+  // }
 
   if (!["simulation", "errors"].includes(type)) {
     redirect("/")
@@ -30,10 +31,11 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
 
   // For 'errors' mode, fetch user's previously incorrect answers
   let questionsToUse = allQuestions
-  if (type === "errors") {
+  if (type === "errors" && user) {
     const { data: incorrectAnswers } = await supabase
       .from("user_answers")
       .select("question_id")
+      .eq("user_id", user.id)
       .eq("is_correct", false)
       .limit(10)
 
@@ -47,5 +49,5 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
     }
   }
 
-  return <ExamInterface questions={questionsToUse} examConfig={examConfig} userId={user.id} />
+  return <ExamInterface questions={questionsToUse} examConfig={examConfig} userId={user?.id || null} />
 }
