@@ -4,9 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import AppHeader from "@/components/app-header"
 import AppFooter from "@/components/app-footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Trash2, Users, UserCheck } from "lucide-react"
-import { deleteUser } from "@/lib/actions/admin"
+import { Users, UserCheck } from "lucide-react"
+import DeleteUserButton from "@/components/delete-user-button"
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -21,24 +20,15 @@ export default async function AdminPage() {
   const adminClient = createAdminClient()
   const { data: authData, error: usersError } = await adminClient.auth.admin.listUsers()
 
-  console.log("[v0] Admin query - Fetching from auth.users")
-  console.log("[v0] Admin query - Results:", {
-    success: !usersError,
-    count: authData?.users?.length || 0,
-    error: usersError,
-  })
-
   const users = authData?.users || []
   const totalUsers = users.length
 
-  // Get recent sessions (last 30 minutes) to estimate active users
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-  const { data: recentSessions } = await supabase
+  const { data: recentSessions } = await adminClient
     .from("exam_sessions")
     .select("user_id")
     .gte("created_at", thirtyMinutesAgo)
 
-  // Count unique users
   const activeUsers = new Set(recentSessions?.map((s) => s.user_id) || []).size
 
   return (
@@ -66,7 +56,7 @@ export default async function AdminPage() {
                 <UserCheck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{activeUsers || 0}</div>
+                <div className="text-2xl font-bold">{activeUsers}</div>
               </CardContent>
             </Card>
 
@@ -77,7 +67,7 @@ export default async function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {totalUsers ? Math.round((activeUsers / totalUsers) * 100) : 0}%
+                  {totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0}%
                 </div>
               </CardContent>
             </Card>
@@ -129,13 +119,10 @@ export default async function AdminPage() {
                                 אדמין
                               </span>
                             ) : (
-                              <form action={deleteUser}>
-                                <input type="hidden" name="userId" value={userItem.id} />
-                                <Button type="submit" variant="destructive" size="sm" className="gap-2">
-                                  <Trash2 className="h-4 w-4" />
-                                  מחק
-                                </Button>
-                              </form>
+                              <DeleteUserButton
+                                userId={userItem.id}
+                                userName={userItem.user_metadata?.full_name || userItem.email || "משתמש"}
+                              />
                             )}
                           </td>
                         </tr>
