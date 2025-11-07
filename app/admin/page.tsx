@@ -17,13 +17,10 @@ export default async function AdminPage() {
     redirect("/")
   }
 
-  const { data: allUsers, error: usersError } = await supabase
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false })
+  const { data: allUsers, error: usersError } = await supabase.rpc("get_all_users_admin")
 
-  console.log("[v0] Admin query - User email:", user.email)
-  console.log("[v0] Admin query - Results:", {
+  console.log("[v0] Admin function call - User email:", user.email)
+  console.log("[v0] Admin function call - Results:", {
     success: !usersError,
     count: allUsers?.length || 0,
     error: usersError,
@@ -98,27 +95,23 @@ export default async function AdminPage() {
                     <p>
                       <strong>הודעה:</strong> {usersError.message}
                     </p>
-                    <p>
-                      <strong>קוד:</strong> {usersError.code || "לא זמין"}
-                    </p>
-                  </div>
-                  <div className="bg-white border p-3 rounded text-sm">
-                    <p className="font-semibold mb-2">🔧 פתרון:</p>
-                    <ol className="list-decimal list-inside space-y-1 text-right">
-                      <li>גש ל-Supabase Dashboard → SQL Editor</li>
-                      <li>
-                        הרץ את הסקריפט:{" "}
-                        <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/009_admin_full_access.sql</code>
-                      </li>
-                      <li>וודא שהסקריפט הציג policy בשם admin_all_access</li>
-                      <li>רענן את הדף</li>
-                    </ol>
+                    <div className="bg-white border p-3 rounded text-sm mt-3">
+                      <p className="font-semibold mb-2">🔧 פתרון:</p>
+                      <ol className="list-decimal list-inside space-y-1 text-right">
+                        <li>גש ל-Supabase Dashboard → SQL Editor</li>
+                        <li>
+                          הרץ את הסקריפט:{" "}
+                          <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/010_create_admin_function.sql</code>
+                        </li>
+                        <li>וודא שהסקריפט הדפיס "Function created successfully!"</li>
+                        <li>רענן את הדף</li>
+                      </ol>
+                    </div>
                   </div>
                 </div>
               ) : users.length === 0 ? (
                 <div className="space-y-4 p-6 bg-amber-50 rounded-lg border border-amber-200 text-center">
                   <p className="text-lg font-semibold">⚠️ לא נמצאו משתמשים</p>
-                  <p className="text-sm">נראה שטבלת profiles ריקה או שהגישה חסומה</p>
                   <div className="bg-white border p-4 rounded text-right text-sm">
                     <p className="font-semibold mb-2">🔧 שני צעדים לתיקון:</p>
                     <div className="space-y-3">
@@ -127,8 +120,10 @@ export default async function AdminPage() {
                         <code className="block bg-gray-100 p-2 rounded my-1">scripts/008_backfill_profiles.sql</code>
                       </div>
                       <div>
-                        <p className="font-semibold">2. הוסף גישת אדמין:</p>
-                        <code className="block bg-gray-100 p-2 rounded my-1">scripts/009_admin_full_access.sql</code>
+                        <p className="font-semibold">2. צור את הפונקציה לאדמין:</p>
+                        <code className="block bg-gray-100 p-2 rounded my-1">
+                          scripts/010_create_admin_function.sql
+                        </code>
                       </div>
                     </div>
                   </div>
