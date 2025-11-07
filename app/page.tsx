@@ -91,19 +91,19 @@ export default async function Page() {
               <ul className="grid md:grid-cols-2 gap-4">
                 <li className="flex items-start gap-3">
                   <span className="text-2xl">✓</span>
-                  <span>שאלות מעודכנות בעברית לפי תורת הרכב לנהג אוטובוס</span>
+                  <span>מאגר שאלות מעודכן לפי תורת הרכב לנהג אוטובוס</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-2xl">✓</span>
-                  <span>מבחני סימולציה עם תנאי זמן אמיתיים</span>
+                  <span>מבחן ייחודי על השאלות שטעיתם בהן בלבד</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-2xl">✓</span>
-                  <span>מעקב אחר התקדמות והישגים אישיים</span>
+                  <span>הסברים מפורטים ומלאים לכל שאלה ושאלה</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-2xl">✓</span>
-                  <span>הסברים מפורטים לכל שאלה</span>
+                  <span>מעקב אחר התקדמות עם סטטיסטיקות מתקדמות</span>
                 </li>
               </ul>
             </CardContent>

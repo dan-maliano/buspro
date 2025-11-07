@@ -8,12 +8,12 @@ export default function AppHeader({ user }: { user: SupabaseUser | null }) {
   return (
     <header className="bg-[#124734] text-white shadow-md">
       <div className="container mx-auto px-4 py-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <Bus className="h-10 w-10" />
-          <div>
+        <Link href="/" className="flex flex-col gap-2 hover:opacity-90 transition-opacity">
+          <div className="flex items-center gap-3">
+            <Bus className="h-10 w-10" />
             <h1 className="text-3xl font-bold">BusPro</h1>
-            <p className="text-sm opacity-90">הכנה לתורת הרכב לנהג אוטובוס</p>
           </div>
+          <p className="text-sm opacity-90">הכנה לתורת הרכב לנהג אוטובוס</p>
         </Link>
         {user ? (
           <div className="flex items-center gap-4">

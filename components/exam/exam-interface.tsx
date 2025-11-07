@@ -310,23 +310,6 @@ export default function ExamInterface({
 
   return (
     <div className="min-h-screen bg-surface">
-      {!userId && (
-        <Alert className="container mx-auto px-4 mt-4 border-[#124734]">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>מבחן כאורח:</strong> אתה עושה את המבחן بدون חשבון. התוצאות והסטטיסטיקות לא יישמרו.{" "}
-            <a href="/auth/login" className="underline font-semibold text-[#124734]">
-              התחבר
-            </a>{" "}
-            או{" "}
-            <a href="/auth/sign-up" className="underline font-semibold text-[#124734]">
-              הירשם
-            </a>{" "}
-            כדי לשמור את ההתקדמות ולעקוב אחר השיפור שלך.
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Header */}
       <header className="bg-[#124734] text-white shadow-md sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
@@ -350,6 +333,25 @@ export default function ExamInterface({
           <Progress value={progressPercent} className="mt-2 h-2" />
         </div>
       </header>
+
+      {/* Guest Alert */}
+      {!userId && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="container mx-auto px-4 py-2">
+            <p className="text-sm text-center">
+              <strong>מבחן כאורח:</strong> התוצאות לא יישמרו.{" "}
+              <a href="/auth/login" className="underline font-semibold text-[#124734]">
+                התחבר
+              </a>{" "}
+              או{" "}
+              <a href="/auth/sign-up" className="underline font-semibold text-[#124734]">
+                הירשם
+              </a>{" "}
+              כדי לשמור את ההתקדמות שלך.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Question Area */}
       <main className="container mx-auto px-4 py-8">
