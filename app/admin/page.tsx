@@ -22,22 +22,15 @@ export default async function AdminPage() {
     .select("*")
     .order("created_at", { ascending: false })
 
-  // Debug logging with more details
-  console.log("[v0] Admin user email:", user.email)
-  console.log("[v0] Profiles query result:", {
+  console.log("[v0] Admin query - User email:", user.email)
+  console.log("[v0] Admin query - Results:", {
+    success: !usersError,
     count: allUsers?.length || 0,
-    error: usersError?.message,
-    hint: usersError?.hint,
-    details: usersError?.details,
+    error: usersError,
   })
 
   const users = allUsers || []
-
-  let totalUsers = users.length
-  if (totalUsers === 0) {
-    const { data: authUsers } = await supabase.from("auth.users").select("raw_user_meta_data")
-    totalUsers = authUsers?.length || 0
-  }
+  const totalUsers = users.length
 
   // Get recent sessions (last 30 minutes) to estimate active users
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
@@ -101,56 +94,43 @@ export default async function AdminPage() {
               {usersError ? (
                 <div className="space-y-4 p-4 bg-red-50 rounded-lg border border-red-200">
                   <p className="text-red-700 font-semibold">❌ שגיאה בטעינת המשתמשים</p>
-                  <div className="space-y-1 text-sm">
+                  <div className="space-y-2 text-sm">
                     <p>
                       <strong>הודעה:</strong> {usersError.message}
                     </p>
-                    {usersError.code && (
-                      <p>
-                        <strong>קוד:</strong> {usersError.code}
-                      </p>
-                    )}
-                    {usersError.hint && (
-                      <p>
-                        <strong>עזרה:</strong> {usersError.hint}
-                      </p>
-                    )}
-                    {usersError.details && (
-                      <p>
-                        <strong>פרטים:</strong> {usersError.details}
-                      </p>
-                    )}
+                    <p>
+                      <strong>קוד:</strong> {usersError.code || "לא זמין"}
+                    </p>
                   </div>
-                  <div className="bg-amber-50 border border-amber-200 p-3 rounded text-sm">
-                    <p className="font-semibold mb-2">💡 כיצד לתקן:</p>
+                  <div className="bg-white border p-3 rounded text-sm">
+                    <p className="font-semibold mb-2">🔧 פתרון:</p>
                     <ol className="list-decimal list-inside space-y-1 text-right">
                       <li>גש ל-Supabase Dashboard → SQL Editor</li>
                       <li>
                         הרץ את הסקריפט:{" "}
-                        <code className="bg-white px-2 py-0.5 rounded">scripts/008_backfill_profiles.sql</code>
+                        <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/009_admin_full_access.sql</code>
                       </li>
+                      <li>וודא שהסקריפט הציג policy בשם admin_all_access</li>
                       <li>רענן את הדף</li>
                     </ol>
                   </div>
                 </div>
               ) : users.length === 0 ? (
                 <div className="space-y-4 p-6 bg-amber-50 rounded-lg border border-amber-200 text-center">
-                  <p className="text-lg font-semibold">⚠️ לא נמצאו משתמשים בטבלת profiles</p>
-                  <p className="text-sm text-muted-foreground">זה יכול לקרות אם המשתמשים נוצרו לפני שהטריגר הוגדר</p>
-                  <div className="bg-white border p-4 rounded text-right">
-                    <p className="font-semibold mb-2">🔧 פתרון:</p>
-                    <ol className="list-decimal list-inside space-y-1 text-sm">
-                      <li>פתח את Supabase Dashboard</li>
-                      <li>עבור ל-SQL Editor</li>
-                      <li>
-                        הרץ את הסקריפט:{" "}
-                        <code className="bg-gray-100 px-2 py-0.5 rounded font-mono">
-                          scripts/008_backfill_profiles.sql
-                        </code>
-                      </li>
-                      <li>הסקריפט ימלא את טבלת profiles ממשתמשי auth.users</li>
-                      <li>רענן את הדף</li>
-                    </ol>
+                  <p className="text-lg font-semibold">⚠️ לא נמצאו משתמשים</p>
+                  <p className="text-sm">נראה שטבלת profiles ריקה או שהגישה חסומה</p>
+                  <div className="bg-white border p-4 rounded text-right text-sm">
+                    <p className="font-semibold mb-2">🔧 שני צעדים לתיקון:</p>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="font-semibold">1. מלא את טבלת profiles:</p>
+                        <code className="block bg-gray-100 p-2 rounded my-1">scripts/008_backfill_profiles.sql</code>
+                      </div>
+                      <div>
+                        <p className="font-semibold">2. הוסף גישת אדמין:</p>
+                        <code className="block bg-gray-100 p-2 rounded my-1">scripts/009_admin_full_access.sql</code>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
