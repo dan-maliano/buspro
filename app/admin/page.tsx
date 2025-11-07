@@ -22,17 +22,22 @@ export default async function AdminPage() {
     .select("*")
     .order("created_at", { ascending: false })
 
-  // Debug logging
-  if (usersError) {
-    console.error("[v0] Admin error fetching users:", usersError)
-  } else {
-    console.log("[v0] Admin successfully fetched users:", allUsers?.length || 0)
-  }
+  // Debug logging with more details
+  console.log("[v0] Admin user email:", user.email)
+  console.log("[v0] Profiles query result:", {
+    count: allUsers?.length || 0,
+    error: usersError?.message,
+    hint: usersError?.hint,
+    details: usersError?.details,
+  })
 
   const users = allUsers || []
 
-  // Get exam sessions count
-  const { count: totalUsers } = await supabase.from("profiles").select("*", { count: "exact", head: true })
+  let totalUsers = users.length
+  if (totalUsers === 0) {
+    const { data: authUsers } = await supabase.from("auth.users").select("raw_user_meta_data")
+    totalUsers = authUsers?.length || 0
+  }
 
   // Get recent sessions (last 30 minutes) to estimate active users
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
@@ -59,7 +64,7 @@ export default async function AdminPage() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalUsers || 0}</div>
+                <div className="text-2xl font-bold">{totalUsers}</div>
               </CardContent>
             </Card>
 
@@ -80,7 +85,7 @@ export default async function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {totalUsers ? Math.round((activeUsers / (totalUsers || 1)) * 100) : 0}%
+                  {totalUsers ? Math.round((activeUsers / totalUsers) * 100) : 0}%
                 </div>
               </CardContent>
             </Card>
@@ -94,22 +99,59 @@ export default async function AdminPage() {
             </CardHeader>
             <CardContent>
               {usersError ? (
-                <div className="space-y-2">
-                  <p className="text-red-500 font-semibold">שגיאה בטעינת המשתמשים</p>
-                  <p className="text-sm text-muted-foreground">הודעה: {usersError.message}</p>
-                  {usersError.code && <p className="text-xs text-muted-foreground">קוד: {usersError.code}</p>}
-                  {usersError.hint && <p className="text-xs text-muted-foreground">עזרה: {usersError.hint}</p>}
-                  <p className="text-xs text-amber-600 mt-4">
-                    💡 אם זו בעיית הרשאות, הרץ את הסקריפט: scripts/007_admin_select_all_profiles.sql
-                  </p>
+                <div className="space-y-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-red-700 font-semibold">❌ שגיאה בטעינת המשתמשים</p>
+                  <div className="space-y-1 text-sm">
+                    <p>
+                      <strong>הודעה:</strong> {usersError.message}
+                    </p>
+                    {usersError.code && (
+                      <p>
+                        <strong>קוד:</strong> {usersError.code}
+                      </p>
+                    )}
+                    {usersError.hint && (
+                      <p>
+                        <strong>עזרה:</strong> {usersError.hint}
+                      </p>
+                    )}
+                    {usersError.details && (
+                      <p>
+                        <strong>פרטים:</strong> {usersError.details}
+                      </p>
+                    )}
+                  </div>
+                  <div className="bg-amber-50 border border-amber-200 p-3 rounded text-sm">
+                    <p className="font-semibold mb-2">💡 כיצד לתקן:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-right">
+                      <li>גש ל-Supabase Dashboard → SQL Editor</li>
+                      <li>
+                        הרץ את הסקריפט:{" "}
+                        <code className="bg-white px-2 py-0.5 rounded">scripts/008_backfill_profiles.sql</code>
+                      </li>
+                      <li>רענן את הדף</li>
+                    </ol>
+                  </div>
                 </div>
-              ) : !users || users.length === 0 ? (
-                <div className="space-y-2">
-                  <p className="text-muted-foreground text-center py-4">לא נמצאו משתמשים</p>
-                  <p className="text-xs text-center text-muted-foreground">
-                    אם זה לא תקין, ודא שהסקריפטים הרצו: scripts/003_create_profiles_trigger.sql ו-
-                    scripts/007_admin_select_all_profiles.sql
-                  </p>
+              ) : users.length === 0 ? (
+                <div className="space-y-4 p-6 bg-amber-50 rounded-lg border border-amber-200 text-center">
+                  <p className="text-lg font-semibold">⚠️ לא נמצאו משתמשים בטבלת profiles</p>
+                  <p className="text-sm text-muted-foreground">זה יכול לקרות אם המשתמשים נוצרו לפני שהטריגר הוגדר</p>
+                  <div className="bg-white border p-4 rounded text-right">
+                    <p className="font-semibold mb-2">🔧 פתרון:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-sm">
+                      <li>פתח את Supabase Dashboard</li>
+                      <li>עבור ל-SQL Editor</li>
+                      <li>
+                        הרץ את הסקריפט:{" "}
+                        <code className="bg-gray-100 px-2 py-0.5 rounded font-mono">
+                          scripts/008_backfill_profiles.sql
+                        </code>
+                      </li>
+                      <li>הסקריפט ימלא את טבלת profiles ממשתמשי auth.users</li>
+                      <li>רענן את הדף</li>
+                    </ol>
+                  </div>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -132,8 +174,8 @@ export default async function AdminPage() {
                           </td>
                           <td className="p-2">
                             {userItem.email === "dbm1000000@gmail.com" ? (
-                              <span className="text-xs text-muted-foreground bg-yellow-100 px-2 py-1 rounded">
-                                אדמין
+                              <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">
+                                👑 אדמין
                               </span>
                             ) : (
                               <form action={deleteUser}>
