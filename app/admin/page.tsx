@@ -23,15 +23,12 @@ export default async function AdminPage() {
   const users = authData?.users || []
   const totalUsers = users.length
 
-  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-  const { data: recentSessions, error: sessionsError } = await adminClient
-    .from("exam_sessions")
-    .select("user_id")
-    .gte("created_at", thirtyMinutesAgo)
-
-  console.log("[v0] Recent sessions query:", { recentSessions, sessionsError, thirtyMinutesAgo })
-
-  const activeUsers = new Set(recentSessions?.map((s) => s.user_id) || []).size
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
+  const activeUsers = users.filter((u) => {
+    if (!u.last_sign_in_at) return false
+    const lastSignIn = new Date(u.last_sign_in_at)
+    return lastSignIn >= thirtyMinutesAgo
+  }).length
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -58,10 +55,7 @@ export default async function AdminPage() {
                 <UserCheck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {sessionsError ? <span className="text-sm text-muted-foreground">לא זמין</span> : activeUsers}
-                </div>
-                {sessionsError && <p className="text-xs text-muted-foreground mt-1">שגיאה בטעינת נתונים</p>}
+                <div className="text-2xl font-bold">{activeUsers}</div>
               </CardContent>
             </Card>
 
@@ -72,7 +66,7 @@ export default async function AdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {sessionsError || totalUsers === 0 ? "—" : `${Math.round((activeUsers / totalUsers) * 100)}%`}
+                  {totalUsers === 0 ? "—" : `${Math.round((activeUsers / totalUsers) * 100)}%`}
                 </div>
               </CardContent>
             </Card>
