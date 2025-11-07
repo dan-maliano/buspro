@@ -36,11 +36,6 @@ export default function AppHeader({ user }: { user: SupabaseUser | null }) {
                     </Button>
                   </Link>
                 )}
-                <Link href="/history">
-                  <Button variant="ghost" className="text-white hover:bg-[#1a5d47]">
-                    היסטוריה
-                  </Button>
-                </Link>
                 <Link href="/profile">
                   <Button variant="ghost" className="text-white hover:bg-[#1a5d47]">
                     <User className="ml-2 h-4 w-4" />

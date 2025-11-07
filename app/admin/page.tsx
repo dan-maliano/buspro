@@ -22,6 +22,8 @@ export default async function AdminPage() {
     .select("*")
     .order("created_at", { ascending: false })
 
+  console.log("[v0] Admin fetching users:", { allUsers, usersError })
+
   const users = allUsers || []
 
   // Get exam sessions count
@@ -87,9 +89,17 @@ export default async function AdminPage() {
             </CardHeader>
             <CardContent>
               {usersError ? (
-                <p className="text-red-500">שגיאה בטעינת המשתמשים: {usersError.message}</p>
+                <div>
+                  <p className="text-red-500">שגיאה בטעינת המשתמשים: {usersError.message}</p>
+                  <p className="text-xs text-muted-foreground mt-2">קוד שגיאה: {usersError.code}</p>
+                </div>
               ) : !users || users.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">אין משתמשים במערכת</p>
+                <div>
+                  <p className="text-muted-foreground text-center py-4">לא נמצאו משתמשים</p>
+                  <p className="text-xs text-center text-muted-foreground">
+                    אם זה לא תקין, בדוק שה-RLS policies הוגדרו נכון
+                  </p>
+                </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
