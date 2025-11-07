@@ -1,5 +1,3 @@
-"use client"
-
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import AppHeader from "@/components/app-header"
@@ -112,17 +110,7 @@ export default async function AdminPage() {
                             {profile.email !== "dbm1000000@gmail.com" && (
                               <form action={deleteUser}>
                                 <input type="hidden" name="userId" value={profile.id} />
-                                <Button
-                                  type="submit"
-                                  variant="destructive"
-                                  size="sm"
-                                  className="gap-2"
-                                  onClick={(e) => {
-                                    if (!confirm(`האם למחוק את המשתמש ${profile.full_name || profile.email}?`)) {
-                                      e.preventDefault()
-                                    }
-                                  }}
-                                >
+                                <Button type="submit" variant="destructive" size="sm" className="gap-2">
                                   <Trash2 className="h-4 w-4" />
                                   מחק
                                 </Button>
