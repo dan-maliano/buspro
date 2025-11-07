@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import AppHeader from "@/components/app-header"
 import AppFooter from "@/components/app-footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,8 +18,9 @@ export default async function AdminPage() {
     redirect("/")
   }
 
-  const { data: allUsers, error: usersError } = await supabase
-    .from("admin_users_view")
+  const adminClient = createAdminClient()
+  const { data: allUsers, error: usersError } = await adminClient
+    .from("profiles")
     .select("*")
     .order("created_at", { ascending: false })
 
@@ -99,21 +101,14 @@ export default async function AdminPage() {
                       <strong>הודעה:</strong> {usersError.message}
                     </p>
                     <div className="bg-white border p-3 rounded text-sm mt-3">
-                      <p className="font-semibold mb-2">פתרון:</p>
-                      <ol className="list-decimal list-inside space-y-1 text-right">
-                        <li>גש ל-Supabase Dashboard → SQL Editor</li>
-                        <li>
-                          הרץ את הסקריפט:{" "}
-                          <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/012_create_admin_view.sql</code>
-                        </li>
-                        <li>רענן את הדף</li>
-                      </ol>
+                      <p className="font-semibold mb-2">אנא צור קשר עם התמיכה הטכנית</p>
                     </div>
                   </div>
                 </div>
               ) : users.length === 0 ? (
                 <div className="space-y-4 p-6 bg-amber-50 rounded-lg border border-amber-200 text-center">
                   <p className="text-lg font-semibold">לא נמצאו משתמשים</p>
+                  <p className="text-sm text-muted-foreground">זה יכול לקרות אם המשתמשים נוצרו לפני שהטריגר הוגדר</p>
                   <div className="bg-white border p-4 rounded text-right text-sm mt-4">
                     <p className="font-semibold mb-2">פתרון:</p>
                     <ol className="list-decimal list-inside space-y-2">
@@ -121,7 +116,11 @@ export default async function AdminPage() {
                       <li>עבור ל-SQL Editor</li>
                       <li>
                         הרץ את הסקריפט:{" "}
-                        <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/012_create_admin_view.sql</code>
+                        <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/003_create_profiles_trigger.sql</code>
+                      </li>
+                      <li>
+                        לאחר מכן הרץ:{" "}
+                        <code className="bg-gray-100 px-2 py-0.5 rounded">scripts/008_backfill_profiles.sql</code>
                       </li>
                       <li>רענן את הדף</li>
                     </ol>
