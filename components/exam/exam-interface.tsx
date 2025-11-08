@@ -135,6 +135,8 @@ export default function ExamInterface({
 
     console.log("[v0] === EXAM SUBMISSION ===")
     console.log("[v0] Total exam time:", totalExamTimeSeconds, "seconds")
+    console.log("[v0] Exam start:", new Date(examStartTime).toISOString())
+    console.log("[v0] Exam end:", new Date().toISOString())
 
     let correctCount = 0
     const answerRecords = questions.map((q, index) => {
@@ -163,10 +165,17 @@ export default function ExamInterface({
       const supabase = createClient()
 
       localStorage.setItem(`exam_time_${sessionId}`, totalExamTimeSeconds.toString())
+      console.log("[v0] Saved time to localStorage:", totalExamTimeSeconds)
 
-      await supabase.from("user_answers").insert(answerRecords)
+      const { error: answersError } = await supabase.from("user_answers").insert(answerRecords)
 
-      await supabase
+      if (answersError) {
+        console.error("[v0] Error saving answers:", answersError)
+      } else {
+        console.log("[v0] ✓ Answers saved")
+      }
+
+      const { error: sessionError } = await supabase
         .from("exam_sessions")
         .update({
           end_time: new Date().toISOString(),
@@ -176,7 +185,13 @@ export default function ExamInterface({
         })
         .eq("id", sessionId)
 
-      console.log("[v0] ✓ Session saved with time:", totalExamTimeSeconds)
+      if (sessionError) {
+        console.error("[v0] Error updating session:", sessionError)
+      } else {
+        console.log("[v0] ✓ Session updated with time:", totalExamTimeSeconds)
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1000))
     } else {
       console.log("[v0] Guest mode - results not saved")
     }

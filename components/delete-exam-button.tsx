@@ -30,7 +30,7 @@ export function DeleteExamButton({ sessionId }: DeleteExamButtonProps) {
 
   const handleDelete = async () => {
     setIsDeleting(true)
-    console.log("[v0] Deleting exam session:", sessionId)
+    console.log("[v0] Starting delete for session:", sessionId)
 
     const result = await deleteExamSession(sessionId)
     console.log("[v0] Delete result:", result)
@@ -40,14 +40,12 @@ export function DeleteExamButton({ sessionId }: DeleteExamButtonProps) {
 
       toast({
         title: "המבחן נמחק בהצלחה",
-        description: "הסטטיסטיקות עודכנו בהתאם",
+        description: "הסטטיסטיקות מתעדכנות...",
       })
 
-      router.refresh()
-
       setTimeout(() => {
-        window.location.reload()
-      }, 500)
+        window.location.href = "/history"
+      }, 300)
     } else {
       toast({
         title: "שגיאה במחיקת המבחן",

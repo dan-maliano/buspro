@@ -8,6 +8,9 @@ import { signOut } from "@/lib/actions/auth"
 import AppHeader from "@/components/app-header"
 import AppFooter from "@/components/app-footer"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export default async function ProfilePage() {
   const supabase = await createClient()
 
@@ -24,6 +27,7 @@ export default async function ProfilePage() {
     .eq("user_id", user.id)
     .not("end_time", "is", null)
 
+  console.log("[v0] Profile - User ID:", user.id)
   console.log("[v0] Profile - Total sessions:", sessions?.length)
 
   if (sessionsError) {

@@ -8,6 +8,9 @@ import AppHeader from "@/components/app-header"
 import AppFooter from "@/components/app-footer"
 import { DeleteExamButton } from "@/components/delete-exam-button"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export default async function HistoryPage() {
   const supabase = await createClient()
 
@@ -25,7 +28,10 @@ export default async function HistoryPage() {
     .not("end_time", "is", null)
     .order("created_at", { ascending: false })
 
+  console.log("[v0] ===== HISTORY PAGE =====")
+  console.log("[v0] User ID:", user.id)
   console.log("[v0] Total sessions found:", sessions?.length)
+  console.log("[v0] Sessions:", sessions)
 
   if (sessionsError) {
     console.error("[v0] Error fetching sessions:", sessionsError)
