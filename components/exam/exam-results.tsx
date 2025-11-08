@@ -28,7 +28,6 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
 
   useEffect(() => {
     async function fetchResults() {
-      console.log("[v0] Fetching results for session:", sessionId)
       const supabase = createClient()
 
       const { data: sessionData, error: sessionError } = await supabase
@@ -36,8 +35,6 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
         .select("*")
         .eq("id", sessionId)
         .single()
-
-      console.log("[v0] Session data:", sessionData, "Error:", sessionError)
 
       const { data: answersData, error: answersError } = await supabase
         .from("user_answers")
@@ -48,13 +45,9 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true })
 
-      console.log("[v0] Answers data:", answersData?.length, "answers", "Error:", answersError)
-      console.log("[v0] First answer sample:", answersData?.[0])
-
       if (sessionData) setSession(sessionData)
       if (answersData) {
         const validAnswers = answersData.filter((a: any) => a.question !== null)
-        console.log("[v0] Valid answers:", validAnswers.length)
         setAnswers(validAnswers as any)
       }
       setLoading(false)
@@ -113,17 +106,6 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const passed = session.passed
   const totalTime = session.time_spent_seconds || answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0)
 
-  console.log("[v0] === RESULTS DISPLAY ===")
-  console.log("[v0] Score from DB:", session.score)
-  console.log("[v0] Total questions:", totalQuestions)
-  console.log("[v0] Percentage:", percentage)
-  console.log("[v0] Time from DB:", session.time_spent_seconds)
-  console.log(
-    "[v0] Calculated time from answers:",
-    answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0),
-  )
-  console.log("[v0] Final time used:", totalTime)
-
   const getAnswerText = (question: Question, letter: string | null): string => {
     if (!letter) return ""
     const optionMap: Record<string, string> = {
@@ -132,8 +114,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
       ג: question.option_c || "",
       ד: question.option_d || "",
     }
-    const text = optionMap[letter] || ""
-    return text.length > 100 ? text.substring(0, 100) + "..." : text
+    return optionMap[letter] || ""
   }
 
   return (
@@ -219,13 +200,6 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                   const userAnswerText = getAnswerText(question, userAnswerLetter)
                   const correctAnswerText = getAnswerText(question, correctAnswerLetter)
 
-                  console.log(`[v0] Displaying Q${index + 1}:`, {
-                    userAnswerLetter,
-                    correctAnswerLetter,
-                    isCorrect,
-                    fromDatabase: answer.is_correct,
-                  })
-
                   return (
                     <div
                       key={answer.id}
@@ -242,30 +216,36 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold mb-2 text-sm md:text-base">
+                          <p className="font-semibold mb-3 text-sm md:text-base leading-relaxed">
                             {index + 1}. {question.question_text}
                           </p>
-                          <div className="space-y-1 text-xs md:text-sm">
-                            <p className="break-words">
-                              <span className="text-muted-foreground">התשובה שלך:</span>{" "}
-                              <span
-                                className={isCorrect ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}
-                              >
+                          <div className="space-y-2 text-sm md:text-base">
+                            {/* User's answer */}
+                            <div className="flex flex-col gap-1">
+                              <span className="text-muted-foreground text-xs md:text-sm">התשובה שלך:</span>
+                              <div className={`font-semibold ${isCorrect ? "text-green-600" : "text-red-600"}`}>
                                 {userAnswerLetter}
-                              </span>
-                              {userAnswerText && <span className="mr-1 md:mr-2">- {userAnswerText}</span>}
-                            </p>
+                                {userAnswerText && <span className="font-normal"> - {userAnswerText}</span>}
+                              </div>
+                            </div>
+
+                            {/* Correct answer (only if user was wrong) */}
                             {!isCorrect && (
-                              <p className="break-words">
-                                <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
-                                <span className="text-green-600 font-semibold">{correctAnswerLetter}</span>
-                                {correctAnswerText && <span className="mr-1 md:mr-2">- {correctAnswerText}</span>}
-                              </p>
+                              <div className="flex flex-col gap-1">
+                                <span className="text-muted-foreground text-xs md:text-sm">תשובה נכונה:</span>
+                                <div className="font-semibold text-green-600">
+                                  {correctAnswerLetter}
+                                  {correctAnswerText && <span className="font-normal"> - {correctAnswerText}</span>}
+                                </div>
+                              </div>
                             )}
+
+                            {/* Explanation */}
                             {question.explanation && (
-                              <p className="mt-2 p-3 bg-white rounded border break-words text-xs md:text-sm">
-                                <span className="font-semibold">הסבר:</span> {question.explanation}
-                              </p>
+                              <div className="mt-3 p-3 bg-white rounded border">
+                                <span className="font-semibold text-xs md:text-sm block mb-1">הסבר:</span>
+                                <span className="text-xs md:text-sm leading-relaxed">{question.explanation}</span>
+                              </div>
                             )}
                           </div>
                         </div>
