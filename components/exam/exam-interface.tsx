@@ -101,6 +101,12 @@ export default function ExamInterface({
       timeSpent: newAnswers[currentQuestionIndex].timeSpent + timeSpent,
     }
     setUserAnswers(newAnswers)
+
+    if (currentQuestionIndex < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestionIndex(currentQuestionIndex + 1)
+      }, 300) // 300ms delay to show selection feedback
+    }
   }
 
   const handleNextQuestion = () => {
