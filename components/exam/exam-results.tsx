@@ -28,30 +28,80 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
 
   useEffect(() => {
     async function fetchResults() {
+      console.log("[v0] Fetching results for session:", sessionId)
       const supabase = createClient()
 
-      const { data: sessionData } = await supabase.from("exam_sessions").select("*").eq("id", sessionId).single()
+      const { data: sessionData, error: sessionError } = await supabase
+        .from("exam_sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .single()
 
-      const { data: answersData } = await supabase
+      console.log("[v0] Session data:", sessionData, "Error:", sessionError)
+
+      const { data: answersData, error: answersError } = await supabase
         .from("user_answers")
         .select(`
           *,
           question:questions(*)
         `)
         .eq("session_id", sessionId)
+        .order("created_at", { ascending: true })
+
+      console.log("[v0] Answers data:", answersData?.length, "answers", "Error:", answersError)
 
       if (sessionData) setSession(sessionData)
-      if (answersData) setAnswers(answersData as any)
+      if (answersData) {
+        const validAnswers = answersData.filter((a: any) => a.question !== null)
+        console.log("[v0] Valid answers:", validAnswers.length)
+        setAnswers(validAnswers as any)
+      }
       setLoading(false)
     }
 
     fetchResults()
   }, [sessionId])
 
-  if (loading || !session) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
         <p className="text-lg">טוען תוצאות...</p>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>שגיאה בטעינת תוצאות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">לא נמצאו תוצאות למבחן זה</p>
+            <Button asChild className="w-full bg-[#124734]">
+              <Link href="/">חזור לדף הבית</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (answers.length === 0) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>אין תוצאות זמינות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">לא נמצאו תשובות למבחן זה</p>
+            <Button asChild className="w-full bg-[#124734]">
+              <Link href="/">חזור לדף הבית</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }

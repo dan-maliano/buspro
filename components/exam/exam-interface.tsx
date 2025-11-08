@@ -36,6 +36,7 @@ export default function ExamInterface({
     questions.map((q) => ({ questionId: q.id, selectedAnswer: null, timeSpent: 0 })),
   )
   const [timeRemaining, setTimeRemaining] = useState(examConfig.timeLimitSeconds || 0)
+  const [examStartTime] = useState(Date.now())
   const [isExamComplete, setIsExamComplete] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -130,9 +131,12 @@ export default function ExamInterface({
     if (isSubmitting) return
     setIsSubmitting(true)
 
+    const totalExamTimeSeconds = Math.floor((Date.now() - examStartTime) / 1000)
+
     console.log("[v0] === EXAM SUBMISSION DEBUG ===")
     console.log("[v0] userId:", userId, "sessionId:", sessionId)
     console.log("[v0] Total questions:", questions.length)
+    console.log("[v0] Total exam time:", totalExamTimeSeconds, "seconds")
 
     if (userId && sessionId) {
       const supabase = createClient()
@@ -152,8 +156,6 @@ export default function ExamInterface({
           userAnswer: userAnswerClean,
           correctAnswer: correctAnswerClean,
           isCorrect,
-          match: userAnswerClean === correctAnswerClean,
-          questionText: q.question_text.substring(0, 50),
         })
 
         return {
@@ -162,7 +164,7 @@ export default function ExamInterface({
           user_answer: userAnswerClean || "א",
           correct_answer_shuffled: correctAnswerClean,
           is_correct: isCorrect,
-          time_spent_seconds: userAnswer.timeSpent,
+          time_spent_seconds: userAnswer.timeSpent || Math.floor(totalExamTimeSeconds / questions.length),
         }
       })
 
@@ -174,9 +176,9 @@ export default function ExamInterface({
         errors,
         passed,
         totalQuestions: examConfig.totalQuestions,
+        totalTime: totalExamTimeSeconds,
       })
 
-      // Insert all answers
       const { error: answersError } = await supabase.from("user_answers").insert(answerRecords)
 
       if (answersError) {
@@ -217,7 +219,6 @@ export default function ExamInterface({
   }
 
   if (isExamComplete && !sessionId) {
-    // Calculate score for guest
     let correctCount = 0
     const resultsData = questions.map((q, index) => {
       const userAnswer = userAnswers[index]
@@ -225,7 +226,7 @@ export default function ExamInterface({
       if (isCorrect) correctCount++
       return {
         question: q,
-        userAnswer: userAnswer.selectedAnswer || "א", // Default to Hebrew א
+        userAnswer: userAnswer.selectedAnswer || "א",
         isCorrect,
       }
     })
@@ -243,7 +244,6 @@ export default function ExamInterface({
 
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
-            {/* Guest Notice */}
             <Alert className="mb-6 border-[#124734]">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -252,7 +252,6 @@ export default function ExamInterface({
               </AlertDescription>
             </Alert>
 
-            {/* Summary Card */}
             <Card className={`mb-8 ${passed ? "border-green-500 border-2" : "border-red-500 border-2"}`}>
               <CardHeader>
                 <div className="text-center">
@@ -277,7 +276,6 @@ export default function ExamInterface({
               </CardHeader>
             </Card>
 
-            {/* Question Review */}
             <Card className="mb-8">
               <CardHeader>
                 <CardTitle>סקירת שאלות</CardTitle>
@@ -334,7 +332,6 @@ export default function ExamInterface({
               </CardContent>
             </Card>
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild className="flex-1 bg-[#124734] hover:bg-[#0d331f]" size="lg">
                 <a href="/">חזור לדף הבית</a>
@@ -354,7 +351,6 @@ export default function ExamInterface({
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* Header */}
       <header className="bg-[#124734] text-white shadow-md sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -378,7 +374,6 @@ export default function ExamInterface({
         </div>
       </header>
 
-      {/* Guest Alert */}
       {!userId && (
         <div className="bg-yellow-50 border-b border-yellow-200">
           <div className="container mx-auto px-4 py-2">
@@ -397,13 +392,11 @@ export default function ExamInterface({
         </div>
       )}
 
-      {/* Question Area */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <Card className="mb-6">
             <CardHeader>
               <div className="space-y-3">
-                {/* Badges row */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-semibold bg-[#124734] text-white px-3 py-1 rounded-full whitespace-nowrap md:hidden">
                     שאלה מספר {currentQuestionIndex + 1}
@@ -413,7 +406,6 @@ export default function ExamInterface({
                   </span>
                 </div>
 
-                {/* Question title - full width */}
                 <CardTitle className="text-xl leading-relaxed">{currentQuestion.question_text}</CardTitle>
               </div>
             </CardHeader>
@@ -426,7 +418,6 @@ export default function ExamInterface({
                 />
               )}
 
-              {/* Answer Options */}
               <div className="space-y-3">
                 {currentQuestion.options.map((option) => {
                   const isSelected = currentAnswer.selectedAnswer === option.letter
@@ -456,13 +447,11 @@ export default function ExamInterface({
             </CardContent>
           </Card>
 
-          {/* Question Navigator */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="text-lg">ניווט מהיר</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Updated grid to support 30 questions - 5 columns on mobile, 10 on tablet, 15 on desktop */}
               <div className="grid grid-cols-5 sm:grid-cols-10 lg:grid-cols-15 gap-2">
                 {questions.map((_, index) => {
                   const answered = userAnswers[index].selectedAnswer !== null
@@ -488,7 +477,6 @@ export default function ExamInterface({
             </CardContent>
           </Card>
 
-          {/* Navigation Buttons */}
           <div className="flex items-center justify-between gap-4">
             <Button
               onClick={handlePreviousQuestion}
