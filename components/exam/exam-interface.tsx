@@ -135,12 +135,16 @@ export default function ExamInterface({
     if (userId && sessionId) {
       const supabase = createClient()
 
-      // Calculate score
       let correctCount = 0
       const answerRecords = questions.map((q, index) => {
         const userAnswer = userAnswers[index]
+        // Compare using the shuffled correct_answer (already in Hebrew)
         const isCorrect = userAnswer.selectedAnswer === q.correct_answer
         if (isCorrect) correctCount++
+
+        console.log(
+          `[v0] Q${index + 1}: user=${userAnswer.selectedAnswer}, correct=${q.correct_answer}, match=${isCorrect}`,
+        )
 
         return {
           session_id: sessionId,
@@ -151,9 +155,19 @@ export default function ExamInterface({
         }
       })
 
-      const passed = correctCount >= examConfig.passingScore
+      const errors = examConfig.totalQuestions - correctCount
+      const passed = errors <= 8
 
-      console.log("[v0] Saving answers, count:", answerRecords.length, "score:", correctCount)
+      console.log(
+        "[v0] Saving answers, count:",
+        answerRecords.length,
+        "score:",
+        correctCount,
+        "errors:",
+        errors,
+        "passed:",
+        passed,
+      )
 
       // Insert all answers
       const { error: answersError } = await supabase.from("user_answers").insert(answerRecords)

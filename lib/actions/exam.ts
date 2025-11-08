@@ -15,7 +15,7 @@ export async function deleteExamSession(sessionId: string) {
   }
 
   // Verify session belongs to user
-  const { data: session } = await supabase.from("exam_sessions").select("user_id, passed").eq("id", sessionId).single()
+  const { data: session } = await supabase.from("exam_sessions").select("user_id").eq("id", sessionId).single()
 
   if (!session) {
     return { success: false, error: "Session not found" }
@@ -25,17 +25,17 @@ export async function deleteExamSession(sessionId: string) {
     return { success: false, error: "Unauthorized" }
   }
 
-  // Delete user_answers first (due to foreign key constraint)
   const { error: answersError } = await supabase.from("user_answers").delete().eq("session_id", sessionId)
 
   if (answersError) {
+    console.error("[v0] Error deleting answers:", answersError)
     return { success: false, error: answersError.message }
   }
 
-  // Delete the exam session
   const { error: sessionError } = await supabase.from("exam_sessions").delete().eq("id", sessionId)
 
   if (sessionError) {
+    console.error("[v0] Error deleting session:", sessionError)
     return { success: false, error: sessionError.message }
   }
 

@@ -245,7 +245,7 @@ export default async function HistoryPage() {
                             </div>
                           </Link>
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            {isPassed === false && <DeleteExamButton sessionId={session.id} />}
+                            <DeleteExamButton sessionId={session.id} />
                             <Link href={`/history/${session.id}`}>
                               <Button variant="ghost" size="icon">
                                 <ArrowRight className="h-5 w-5 text-muted-foreground" />
