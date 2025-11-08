@@ -8,28 +8,28 @@ import Link from "next/link"
 import { CheckCircle2, XCircle, Clock, TrendingUp, Home } from "lucide-react"
 import type { Question, UserAnswer, ExamSession } from "@/lib/types"
 
+const convertToHebrew = (letter: string | undefined | null): string => {
+  if (!letter) return ""
+
+  const mapping: Record<string, string> = {
+    A: "א",
+    B: "ב",
+    C: "ג",
+    D: "ד",
+    a: "א",
+    b: "ב",
+    c: "ג",
+    d: "ד",
+  }
+
+  const cleaned = letter.toString().trim()
+  return mapping[cleaned] || cleaned
+}
+
 export default function ExamResults({ sessionId }: { sessionId: string }) {
   const [session, setSession] = useState<ExamSession | null>(null)
   const [answers, setAnswers] = useState<(UserAnswer & { question: Question })[]>([])
   const [loading, setLoading] = useState(true)
-
-  const convertToHebrew = (letter: string): string => {
-    const cleanLetter = letter?.trim().toUpperCase()
-    console.log("[v0] Converting letter:", letter, "=>", cleanLetter)
-    const mapping: Record<string, string> = {
-      A: "א",
-      B: "ב",
-      C: "ג",
-      D: "ד",
-      א: "א",
-      ב: "ב",
-      ג: "ג",
-      ד: "ד",
-    }
-    const result = mapping[cleanLetter] || cleanLetter || letter
-    console.log("[v0] Result:", result)
-    return result
-  }
 
   useEffect(() => {
     async function fetchResults() {
