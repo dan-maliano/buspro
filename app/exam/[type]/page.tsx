@@ -28,19 +28,37 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
   let questionsToUse = []
 
   if (type === "simulation") {
-    console.log("[v0] Loading 30 questions for simulation exam...")
-
-    const { data: allQuestions, error } = await supabase.from("questions").select("*").limit(100) // Get more than needed to ensure variety
+    const { data: allQuestions, error } = await supabase.from("questions").select("*").limit(500)
 
     if (error) {
       console.error("[v0] Error fetching questions:", error)
     }
 
     if (allQuestions && allQuestions.length > 0) {
-      // Shuffle and select exactly 30 questions
-      const shuffled = allQuestions.sort(() => Math.random() - 0.5)
-      questionsToUse = shuffled.slice(0, Math.min(30, allQuestions.length))
-      console.log(`[v0] Loaded ${questionsToUse.length} questions for simulation exam`)
+      const targetCount = 30
+
+      if (allQuestions.length >= targetCount) {
+        // We have enough questions - shuffle and take 30
+        const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+        questionsToUse = shuffled.slice(0, targetCount)
+      } else {
+        // Not enough questions - duplicate them to reach 30
+        questionsToUse = []
+        const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+
+        while (questionsToUse.length < targetCount) {
+          const remaining = targetCount - questionsToUse.length
+          const toAdd = Math.min(remaining, shuffled.length)
+          questionsToUse.push(...shuffled.slice(0, toAdd))
+
+          // Reshuffle for next iteration if we need more
+          if (questionsToUse.length < targetCount) {
+            shuffled.sort(() => Math.random() - 0.5)
+          }
+        }
+      }
+
+      console.log(`[v0] Loaded exactly ${questionsToUse.length} questions for simulation exam`)
     } else {
       console.error("[v0] No questions found in database")
     }

@@ -5,6 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "import-questions": "tsx scripts/import-real-questions.ts",
     "lint": "eslint .",
     "start": "next start"
   },
@@ -88,6 +89,7 @@
     "sqlite3": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.19.2",
     "vaul": "^0.9.9",
     "zod": "3.25.76"
   },
