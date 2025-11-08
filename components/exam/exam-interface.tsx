@@ -153,6 +153,7 @@ export default function ExamInterface({
 
         console.log(`[v0] Q${index + 1}:`, {
           questionId: q.id,
+          questionText: q.question_text?.substring(0, 50),
           userAnswer: userAnswerClean,
           correctAnswer: correctAnswerClean,
           isCorrect,
@@ -161,7 +162,7 @@ export default function ExamInterface({
         return {
           session_id: sessionId,
           question_id: q.id,
-          user_answer: userAnswerClean || "א",
+          user_answer: userAnswerClean || null,
           is_correct: isCorrect,
           time_spent_seconds: userAnswer.timeSpent || Math.floor(totalExamTimeSeconds / questions.length),
         }
