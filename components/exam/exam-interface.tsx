@@ -364,8 +364,13 @@ export default function ExamInterface({
         <div className="max-w-4xl mx-auto">
           <Card className="mb-6">
             <CardHeader>
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-xl leading-relaxed">{currentQuestion.question_text}</CardTitle>
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2 md:hidden">
+                  <span className="text-sm font-semibold bg-[#124734] text-white px-3 py-1 rounded-full whitespace-nowrap">
+                    שאלה מספר {currentQuestionIndex + 1}
+                  </span>
+                </div>
+                <CardTitle className="text-xl leading-relaxed flex-1">{currentQuestion.question_text}</CardTitle>
                 <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full whitespace-nowrap">
                   {currentQuestion.category}
                 </span>

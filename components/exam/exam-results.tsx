@@ -62,6 +62,17 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const passed = session.passed
   const totalTime = answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0)
 
+  const getAnswerText = (question: Question, letter: string): string => {
+    const hebrewLetter = convertToHebrew(letter)
+    const optionMap: Record<string, string> = {
+      א: question.option_a || "",
+      ב: question.option_b || "",
+      ג: question.option_c || "",
+      ד: question.option_d || "",
+    }
+    return optionMap[hebrewLetter] || ""
+  }
+
   return (
     <div className="min-h-screen bg-surface">
       {/* Header */}
@@ -142,6 +153,9 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                   const userAnswerHebrew = convertToHebrew(answer.user_answer)
                   const correctAnswerHebrew = convertToHebrew(question.correct_answer)
 
+                  const userAnswerText = getAnswerText(question, answer.user_answer || "")
+                  const correctAnswerText = getAnswerText(question, question.correct_answer || "")
+
                   return (
                     <div
                       key={answer.id}
@@ -169,11 +183,13 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                               >
                                 {userAnswerHebrew}
                               </span>
+                              {userAnswerText && <span className="mr-2">- {userAnswerText}</span>}
                             </p>
                             {!isCorrect && (
                               <p>
                                 <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
                                 <span className="text-green-600 font-semibold">{correctAnswerHebrew}</span>
+                                {correctAnswerText && <span className="mr-2">- {correctAnswerText}</span>}
                               </p>
                             )}
                             {question.explanation && (
