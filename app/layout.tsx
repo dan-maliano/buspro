@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import CookieBanner from "@/components/cookie-banner"
 
@@ -7,7 +7,20 @@ export const metadata: Metadata = {
   title: "BusPro - הכנה לתורת הרכב לנהג אוטובוס",
   description: "אפליקציית הכנה לתורת הרכב לנהגי אוטובוס",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "BusPro",
+  },
     generator: 'v0.app'
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
 }
 
 export default function RootLayout({
