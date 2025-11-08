@@ -15,6 +15,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
 
   const convertToHebrew = (letter: string): string => {
     const cleanLetter = letter?.trim().toUpperCase()
+    console.log("[v0] Converting letter:", letter, "=>", cleanLetter)
     const mapping: Record<string, string> = {
       A: "א",
       B: "ב",
@@ -25,7 +26,9 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
       ג: "ג",
       ד: "ד",
     }
-    return mapping[cleanLetter] || cleanLetter || letter
+    const result = mapping[cleanLetter] || cleanLetter || letter
+    console.log("[v0] Result:", result)
+    return result
   }
 
   useEffect(() => {
