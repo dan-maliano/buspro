@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
 import questionsData from "@/data/questions.json"
 import correctAnswersData from "@/data/correct_answers.json"
@@ -6,7 +6,7 @@ import { randomUUID } from "crypto"
 
 export async function POST() {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     console.log("[v0] Starting import of 500 questions...")
 
@@ -30,7 +30,7 @@ export async function POST() {
       }
 
       return {
-        id: randomUUID(), // Generate UUID for each question
+        id: randomUUID(),
         question_text: q.question,
         option_a: q.answers["א"],
         option_b: q.answers["ב"],
@@ -44,9 +44,8 @@ export async function POST() {
     })
 
     console.log(`[v0] Prepared ${questionsToInsert.length} questions for import`)
-    console.log(`[v0] Sample question:`, questionsToInsert[0])
 
-    const batchSize = 50 // Reduced batch size for stability
+    const batchSize = 50
     let importedCount = 0
 
     for (let i = 0; i < questionsToInsert.length; i += batchSize) {
@@ -56,8 +55,6 @@ export async function POST() {
 
       if (insertError) {
         console.error(`[v0] Error inserting batch ${i / batchSize + 1}:`, insertError)
-        console.error(`[v0] Error details:`, JSON.stringify(insertError, null, 2))
-        console.error(`[v0] Sample question from failed batch:`, batch[0])
 
         return NextResponse.json(
           {
