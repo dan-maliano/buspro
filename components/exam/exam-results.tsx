@@ -11,19 +11,14 @@ import type { Question, UserAnswer, ExamSession } from "@/lib/types"
 const convertToHebrew = (letter: string | undefined | null): string => {
   if (!letter) return ""
 
-  const mapping: Record<string, string> = {
-    A: "א",
-    B: "ב",
-    C: "ג",
-    D: "ד",
-    a: "א",
-    b: "ב",
-    c: "ג",
-    d: "ד",
-  }
+  const str = String(letter).trim().toUpperCase()
 
-  const cleaned = letter.toString().trim()
-  return mapping[cleaned] || cleaned
+  if (str === "A" || str === "א") return "א"
+  if (str === "B" || str === "ב") return "ב"
+  if (str === "C" || str === "ג") return "ג"
+  if (str === "D" || str === "ד") return "ד"
+
+  return letter.toString()
 }
 
 export default function ExamResults({ sessionId }: { sessionId: string }) {
@@ -144,6 +139,9 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                   const question = answer.question
                   const isCorrect = answer.is_correct
 
+                  const userAnswerHebrew = convertToHebrew(answer.user_answer)
+                  const correctAnswerHebrew = convertToHebrew(question.correct_answer)
+
                   return (
                     <div
                       key={answer.id}
@@ -169,15 +167,13 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                               <span
                                 className={isCorrect ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}
                               >
-                                {convertToHebrew(answer.user_answer)}
+                                {userAnswerHebrew}
                               </span>
                             </p>
                             {!isCorrect && (
                               <p>
                                 <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
-                                <span className="text-green-600 font-semibold">
-                                  {convertToHebrew(question.correct_answer)}
-                                </span>
+                                <span className="text-green-600 font-semibold">{correctAnswerHebrew}</span>
                               </p>
                             )}
                             {question.explanation && (
