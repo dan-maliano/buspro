@@ -53,9 +53,9 @@ export type ExamConfig = {
 export const EXAM_CONFIGS: Record<string, ExamConfig> = {
   simulation: {
     type: "simulation",
-    totalQuestions: 30,
+    totalQuestions: 30, // Need 26/30 correct (86.7%)
     timeLimitSeconds: 45 * 60, // 45 minutes
-    passingScore: 26, // Need 26/30 correct
+    passingScore: 26,
   },
   errors: {
     type: "errors",
