@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 import questionsData from "@/data/questions.json"
 import correctAnswersData from "@/data/correct_answers.json"
+import { randomUUID } from "crypto"
 
 export async function POST() {
   try {
@@ -16,7 +17,6 @@ export async function POST() {
 
     if (deleteError) {
       console.error("[v0] Error deleting old questions:", deleteError)
-      return NextResponse.json({ error: "Failed to delete old questions" }, { status: 500 })
     }
 
     console.log("[v0] Deleted old questions successfully")
@@ -30,6 +30,7 @@ export async function POST() {
       }
 
       return {
+        id: randomUUID(), // Generate UUID for each question
         question_text: q.question,
         option_a: q.answers["א"],
         option_b: q.answers["ב"],
@@ -43,20 +44,27 @@ export async function POST() {
     })
 
     console.log(`[v0] Prepared ${questionsToInsert.length} questions for import`)
+    console.log(`[v0] Sample question:`, questionsToInsert[0])
 
-    const batchSize = 100
+    const batchSize = 50 // Reduced batch size for stability
     let importedCount = 0
 
     for (let i = 0; i < questionsToInsert.length; i += batchSize) {
       const batch = questionsToInsert.slice(i, i + batchSize)
-      const { error: insertError } = await supabase.from("questions").insert(batch)
+
+      const { data, error: insertError } = await supabase.from("questions").insert(batch).select()
 
       if (insertError) {
         console.error(`[v0] Error inserting batch ${i / batchSize + 1}:`, insertError)
+        console.error(`[v0] Error details:`, JSON.stringify(insertError, null, 2))
+        console.error(`[v0] Sample question from failed batch:`, batch[0])
+
         return NextResponse.json(
           {
             error: `Failed to insert batch ${i / batchSize + 1}`,
-            details: insertError,
+            details: insertError.message,
+            hint: insertError.hint,
+            code: insertError.code,
           },
           { status: 500 },
         )
@@ -86,6 +94,7 @@ export async function POST() {
       {
         error: "Import failed",
         details: error.message,
+        stack: error.stack,
       },
       { status: 500 },
     )

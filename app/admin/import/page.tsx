@@ -9,7 +9,7 @@ import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
 export default function ImportQuestionsPage() {
   const [importing, setImporting] = useState(false)
   const [result, setResult] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<any>(null)
 
   const handleImport = async () => {
     setImporting(true)
@@ -26,10 +26,10 @@ export default function ImportQuestionsPage() {
       if (response.ok) {
         setResult(data)
       } else {
-        setError(data.error || "Import failed")
+        setError(data)
       }
     } catch (err: any) {
-      setError(err.message || "Network error")
+      setError({ error: "Network error", details: err.message })
     } finally {
       setImporting(false)
     }
@@ -68,9 +68,24 @@ export default function ImportQuestionsPage() {
           {error && (
             <Alert className="bg-red-50 border-red-200">
               <XCircle className="h-5 w-5 text-red-600" />
-              <AlertDescription className="text-red-800">
-                <div className="font-bold mb-2">שגיאה בייבוא</div>
-                <div>{error}</div>
+              <AlertDescription className="text-red-800 space-y-2">
+                <div className="font-bold">שגיאה בייבוא</div>
+                <div>{error.error}</div>
+                {error.details && (
+                  <div className="text-sm mt-2">
+                    <strong>פרטים:</strong> {error.details}
+                  </div>
+                )}
+                {error.hint && (
+                  <div className="text-sm mt-2">
+                    <strong>רמז:</strong> {error.hint}
+                  </div>
+                )}
+                {error.code && (
+                  <div className="text-sm mt-2">
+                    <strong>קוד שגיאה:</strong> {error.code}
+                  </div>
+                )}
               </AlertDescription>
             </Alert>
           )}
