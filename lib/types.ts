@@ -3,7 +3,7 @@ export type Question = {
   question_text: string
   question_image_url: string | null
   category: string
-  correct_answer: "A" | "B" | "C" | "D"
+  correct_answer: "א" | "ב" | "ג" | "ד"
   option_a: string
   option_b: string
   option_c: string
@@ -29,7 +29,7 @@ export type UserAnswer = {
   id: string
   session_id: string
   question_id: string
-  user_answer: "A" | "B" | "C" | "D"
+  user_answer: "א" | "ב" | "ג" | "ד"
   is_correct: boolean
   time_spent_seconds: number | null
   created_at: string

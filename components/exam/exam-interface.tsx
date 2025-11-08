@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 type UserAnswerState = {
   questionId: string
-  selectedAnswer: "A" | "B" | "C" | "D" | null
+  selectedAnswer: "א" | "ב" | "ג" | "ד" | null
   timeSpent: number
 }
 
@@ -92,7 +92,7 @@ export default function ExamInterface({
     setQuestionStartTime(Date.now())
   }, [currentQuestionIndex])
 
-  const handleAnswerSelect = (answer: "A" | "B" | "C" | "D") => {
+  const handleAnswerSelect = (answer: "א" | "ב" | "ג" | "ד") => {
     const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000)
     const newAnswers = [...userAnswers]
     newAnswers[currentQuestionIndex] = {
@@ -138,7 +138,7 @@ export default function ExamInterface({
         return {
           session_id: sessionId,
           question_id: q.id,
-          user_answer: userAnswer.selectedAnswer || "A",
+          user_answer: userAnswer.selectedAnswer || "א", // Default to Hebrew א
           is_correct: isCorrect,
           time_spent_seconds: userAnswer.timeSpent,
         }
@@ -187,7 +187,7 @@ export default function ExamInterface({
       if (isCorrect) correctCount++
       return {
         question: q,
-        userAnswer: userAnswer.selectedAnswer || "A",
+        userAnswer: userAnswer.selectedAnswer || "א", // Default to Hebrew א
         isCorrect,
       }
     })
@@ -382,8 +382,11 @@ export default function ExamInterface({
 
               {/* Answer Options */}
               <div className="space-y-3">
-                {(["A", "B", "C", "D"] as const).map((option) => {
-                  const optionText = currentQuestion[`option_${option.toLowerCase()}` as keyof Question] as string
+                {(["א", "ב", "ג", "ד"] as const).map((option, idx) => {
+                  const englishOption = ["A", "B", "C", "D"][idx]
+                  const optionText = currentQuestion[
+                    `option_${englishOption.toLowerCase()}` as keyof Question
+                  ] as string
                   const isSelected = currentAnswer.selectedAnswer === option
 
                   return (
