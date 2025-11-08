@@ -8,7 +8,7 @@ export async function POST() {
   try {
     const supabase = createAdminClient()
 
-    console.log("[v0] Starting import of 500 questions...")
+    console.log("[v0] Starting import of questions...")
 
     const { error: deleteError } = await supabase
       .from("questions")
@@ -21,44 +21,52 @@ export async function POST() {
 
     console.log("[v0] Deleted old questions successfully")
 
-    const questionsToInsert = questionsData.map((q: any) => {
-      const answerKey = `${q.chapter}-${q.number}`
-      const correctAnswer = correctAnswersData[answerKey as keyof typeof correctAnswersData]
+    const questionsToInsert = questionsData
+      .filter((q: any) => {
+        // Skip questions with empty text or empty answers
+        return q.question && q.question.trim() !== "" && q.answers && Object.keys(q.answers).length === 4
+      })
+      .map((q: any) => {
+        const answerKey = `${q.chapter}-${q.number}`
+        const correctAnswer = correctAnswersData[answerKey as keyof typeof correctAnswersData]
 
-      if (!correctAnswer) {
-        console.warn(`[v0] Missing correct answer for ${answerKey}`)
-      }
+        if (!correctAnswer) {
+          console.warn(`[v0] Missing correct answer for ${answerKey}`)
+        }
 
-      return {
-        id: randomUUID(),
-        question_text: q.question,
-        option_a: q.answers["א"],
-        option_b: q.answers["ב"],
-        option_c: q.answers["ג"],
-        option_d: q.answers["ד"],
-        correct_answer: correctAnswer || "א",
-        category: `פרק ${q.chapter}`,
-        explanation: null,
-        question_image_url: null,
-      }
-    })
+        return {
+          id: randomUUID(),
+          question_text: q.question,
+          option_a: q.answers["א"] || "",
+          option_b: q.answers["ב"] || "",
+          option_c: q.answers["ג"] || "",
+          option_d: q.answers["ד"] || "",
+          correct_answer: correctAnswer || "א",
+          category: `פרק ${q.chapter}`,
+          explanation: null,
+          question_image_url: null,
+        }
+      })
 
-    console.log(`[v0] Prepared ${questionsToInsert.length} questions for import`)
+    console.log(`[v0] Prepared ${questionsToInsert.length} valid questions for import`)
 
     const batchSize = 50
     let importedCount = 0
 
     for (let i = 0; i < questionsToInsert.length; i += batchSize) {
       const batch = questionsToInsert.slice(i, i + batchSize)
+      const batchNumber = i / batchSize + 1
+
+      console.log(`[v0] Inserting batch ${batchNumber}...`)
 
       const { data, error: insertError } = await supabase.from("questions").insert(batch).select()
 
       if (insertError) {
-        console.error(`[v0] Error inserting batch ${i / batchSize + 1}:`, insertError)
+        console.error(`[v0] Error inserting batch ${batchNumber}:`, insertError)
 
         return NextResponse.json(
           {
-            error: `Failed to insert batch ${i / batchSize + 1}`,
+            error: `Failed to insert batch ${batchNumber}`,
             details: insertError.message,
             hint: insertError.hint,
             code: insertError.code,
