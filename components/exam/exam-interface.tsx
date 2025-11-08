@@ -125,6 +125,8 @@ export default function ExamInterface({
     if (isSubmitting) return
     setIsSubmitting(true)
 
+    console.log("[v0] Submitting exam, userId:", userId, "sessionId:", sessionId)
+
     if (userId && sessionId) {
       const supabase = createClient()
 
@@ -138,7 +140,7 @@ export default function ExamInterface({
         return {
           session_id: sessionId,
           question_id: q.id,
-          user_answer: userAnswer.selectedAnswer || "א", // Default to Hebrew א
+          user_answer: userAnswer.selectedAnswer || "א",
           is_correct: isCorrect,
           time_spent_seconds: userAnswer.timeSpent,
         }
@@ -146,20 +148,31 @@ export default function ExamInterface({
 
       const passed = correctCount >= examConfig.passingScore
 
-      // Insert all answers
-      await supabase.from("user_answers").insert(answerRecords)
+      console.log("[v0] Saving answers, count:", answerRecords.length, "score:", correctCount)
 
-      const allAnswered = userAnswers.every((a) => a.selectedAnswer !== null)
-      if (allAnswered) {
-        await supabase
-          .from("exam_sessions")
-          .update({
-            end_time: new Date().toISOString(),
-            score: correctCount,
-            passed: examConfig.type === "simulation" ? passed : null,
-            completed: true, // Explicitly mark as completed
-          })
-          .eq("id", sessionId)
+      // Insert all answers
+      const { error: answersError } = await supabase.from("user_answers").insert(answerRecords)
+
+      if (answersError) {
+        console.error("[v0] Failed to save answers:", answersError)
+      } else {
+        console.log("[v0] Answers saved successfully")
+      }
+
+      const { error: sessionError } = await supabase
+        .from("exam_sessions")
+        .update({
+          end_time: new Date().toISOString(),
+          score: correctCount,
+          passed: examConfig.type === "simulation" ? passed : null,
+          completed: true, // Always mark as completed when exam is submitted
+        })
+        .eq("id", sessionId)
+
+      if (sessionError) {
+        console.error("[v0] Failed to update session:", sessionError)
+      } else {
+        console.log("[v0] Session updated successfully")
       }
     } else {
       console.log("[v0] Guest exam completed - results not saved")
