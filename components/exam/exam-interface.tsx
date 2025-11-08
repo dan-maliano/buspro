@@ -37,7 +37,6 @@ export default function ExamInterface({
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const questionStartTimeRef = useRef<number>(Date.now())
-  const questionTimeIntervalsRef = useRef<Map<number, number>>(new Map())
   const router = useRouter()
 
   const currentQuestion = questions[currentQuestionIndex]
@@ -97,41 +96,15 @@ export default function ExamInterface({
     questionStartTimeRef.current = now
   }, [currentQuestionIndex])
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now()
-      const timeSpent = Math.floor((now - questionStartTimeRef.current) / 1000)
-
-      // Update the time for current question
-      setUserAnswers((prev) => {
-        const updated = [...prev]
-        updated[currentQuestionIndex] = {
-          ...updated[currentQuestionIndex],
-          timeSpent: (questionTimeIntervalsRef.current.get(currentQuestionIndex) || 0) + timeSpent,
-        }
-        return updated
-      })
-
-      // Reset start time
-      questionStartTimeRef.current = now
-    }, 1000) // Update every second
-
-    return () => clearInterval(interval)
-  }, [currentQuestionIndex])
-
   const handleAnswerSelect = (answer: "א" | "ב" | "ג" | "ד") => {
     const now = Date.now()
-    const additionalTime = Math.floor((now - questionStartTimeRef.current) / 1000)
-    const totalTimeForQuestion = (questionTimeIntervalsRef.current.get(currentQuestionIndex) || 0) + additionalTime
-
-    // Store the total time
-    questionTimeIntervalsRef.current.set(currentQuestionIndex, totalTimeForQuestion)
+    const timeSpent = Math.floor((now - questionStartTimeRef.current) / 1000)
 
     const newAnswers = [...userAnswers]
     newAnswers[currentQuestionIndex] = {
       ...newAnswers[currentQuestionIndex],
       selectedAnswer: answer,
-      timeSpent: totalTimeForQuestion,
+      timeSpent: newAnswers[currentQuestionIndex].timeSpent + timeSpent, // Add to existing time if revisiting
     }
     setUserAnswers(newAnswers)
 
@@ -221,7 +194,7 @@ export default function ExamInterface({
           end_time: new Date().toISOString(),
           score: correctCount,
           passed: passed,
-          time_spent_seconds: totalExamTimeSeconds,
+          time_spent_seconds: totalExamTimeSeconds, // Real total time
         })
         .eq("id", sessionId)
 
