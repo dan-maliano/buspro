@@ -13,6 +13,16 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const [answers, setAnswers] = useState<(UserAnswer & { question: Question })[]>([])
   const [loading, setLoading] = useState(true)
 
+  const convertToHebrew = (letter: string): string => {
+    const mapping: Record<string, string> = {
+      A: "א",
+      B: "ב",
+      C: "ג",
+      D: "ד",
+    }
+    return mapping[letter] || letter
+  }
+
   useEffect(() => {
     async function fetchResults() {
       const supabase = createClient()
@@ -151,13 +161,15 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                               <span
                                 className={isCorrect ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}
                               >
-                                {answer.user_answer}
+                                {convertToHebrew(answer.user_answer)}
                               </span>
                             </p>
                             {!isCorrect && (
                               <p>
                                 <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
-                                <span className="text-green-600 font-semibold">{question.correct_answer}</span>
+                                <span className="text-green-600 font-semibold">
+                                  {convertToHebrew(question.correct_answer)}
+                                </span>
                               </p>
                             )}
                             {question.explanation && (
