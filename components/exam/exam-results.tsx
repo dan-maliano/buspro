@@ -33,7 +33,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
       let retries = 0
       let sessionData = null
 
-      while (retries < 3) {
+      while (retries < 5) {
         const { data, error } = await supabase.from("exam_sessions").select("*").eq("id", sessionId).single()
 
         if (error) {
@@ -41,16 +41,24 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
           break
         }
 
-        // If time_spent_seconds is 0 or null, wait and retry
-        if (data && (data.time_spent_seconds === 0 || data.time_spent_seconds === null) && retries < 2) {
-          console.log(`[v0] Time not ready, retry ${retries + 1}/3...`)
-          await new Promise((resolve) => setTimeout(resolve, 500))
-          retries++
-          continue
+        console.log(`[v0] Attempt ${retries + 1}: time_spent_seconds =`, data.time_spent_seconds)
+
+        if (data && data.time_spent_seconds && data.time_spent_seconds > 0) {
+          sessionData = data
+          console.log("[v0] ✓ Valid time data found:", data.time_spent_seconds, "seconds")
+          break
         }
 
-        sessionData = data
-        break
+        if (retries < 4) {
+          const waitTime = 500 * (retries + 1) // Incremental backoff: 500ms, 1000ms, 1500ms, 2000ms
+          console.log(`[v0] Time not ready, waiting ${waitTime}ms before retry...`)
+          await new Promise((resolve) => setTimeout(resolve, waitTime))
+          retries++
+        } else {
+          console.log("[v0] ⚠ Max retries reached, using data as-is")
+          sessionData = data
+          break
+        }
       }
 
       const { data: answersData, error: answersError } = await supabase
@@ -67,11 +75,10 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
       }
 
       if (sessionData) {
-        console.log("[v0] Final session data loaded:", {
-          score: sessionData.score,
-          time: sessionData.time_spent_seconds,
-          passed: sessionData.passed,
-        })
+        console.log("[v0] === FINAL SESSION DATA ===")
+        console.log("[v0] Score:", sessionData.score)
+        console.log("[v0] Time:", sessionData.time_spent_seconds, "seconds")
+        console.log("[v0] Passed:", sessionData.passed)
         setSession(sessionData)
       }
 
