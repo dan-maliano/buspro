@@ -162,7 +162,6 @@ export default function ExamInterface({
           session_id: sessionId,
           question_id: q.id,
           user_answer: userAnswerClean || "א",
-          correct_answer_shuffled: correctAnswerClean,
           is_correct: isCorrect,
           time_spent_seconds: userAnswer.timeSpent || Math.floor(totalExamTimeSeconds / questions.length),
         }
@@ -193,6 +192,7 @@ export default function ExamInterface({
           end_time: new Date().toISOString(),
           score: correctCount,
           passed: examConfig.type === "simulation" ? passed : null,
+          time_spent_seconds: totalExamTimeSeconds,
         })
         .eq("id", sessionId)
 

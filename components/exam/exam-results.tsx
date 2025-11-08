@@ -49,6 +49,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
         .order("created_at", { ascending: true })
 
       console.log("[v0] Answers data:", answersData?.length, "answers", "Error:", answersError)
+      console.log("[v0] First answer sample:", answersData?.[0])
 
       if (sessionData) setSession(sessionData)
       if (answersData) {
@@ -110,7 +111,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const totalQuestions = session.total_questions
   const percentage = Math.round((score / totalQuestions) * 100)
   const passed = session.passed
-  const totalTime = answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0)
+  const totalTime = session.time_spent_seconds || answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0)
 
   const getAnswerText = (question: Question, letter: string): string => {
     const hebrewLetter = convertToHebrew(letter)
@@ -201,13 +202,10 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                   const isCorrect = answer.is_correct
 
                   const userAnswerHebrew = convertToHebrew(answer.user_answer)
-                  const correctAnswerHebrew = convertToHebrew(answer.correct_answer_shuffled || question.correct_answer)
+                  const correctAnswerHebrew = convertToHebrew(question.correct_answer)
 
                   const userAnswerText = getAnswerText(question, answer.user_answer || "")
-                  const correctAnswerText = getAnswerText(
-                    question,
-                    answer.correct_answer_shuffled || question.correct_answer || "",
-                  )
+                  const correctAnswerText = getAnswerText(question, question.correct_answer || "")
 
                   return (
                     <div
@@ -238,11 +236,13 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                               </span>
                               {userAnswerText && <span className="mr-1 md:mr-2">- {userAnswerText}</span>}
                             </p>
-                            <p className="break-words">
-                              <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
-                              <span className="text-green-600 font-semibold">{correctAnswerHebrew}</span>
-                              {correctAnswerText && <span className="mr-1 md:mr-2">- {correctAnswerText}</span>}
-                            </p>
+                            {!isCorrect && (
+                              <p className="break-words">
+                                <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
+                                <span className="text-green-600 font-semibold">{correctAnswerHebrew}</span>
+                                {correctAnswerText && <span className="mr-1 md:mr-2">- {correctAnswerText}</span>}
+                              </p>
+                            )}
                             {question.explanation && (
                               <p className="mt-2 p-3 bg-white rounded border break-words text-xs md:text-sm">
                                 <span className="font-semibold">הסבר:</span> {question.explanation}
