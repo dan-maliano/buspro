@@ -45,11 +45,23 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true })
 
-      if (sessionData) setSession(sessionData)
+      if (sessionError) {
+        console.error("[v0] Error fetching session:", sessionError)
+      }
+
+      if (answersError) {
+        console.error("[v0] Error fetching answers:", answersError)
+      }
+
+      if (sessionData) {
+        setSession(sessionData)
+      }
+
       if (answersData) {
         const validAnswers = answersData.filter((a: any) => a.question !== null)
         setAnswers(validAnswers as any)
       }
+
       setLoading(false)
     }
 
@@ -100,7 +112,8 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
     )
   }
 
-  const score = session.score || 0
+  const correctAnswersCount = answers.filter((a) => a.is_correct).length
+  const score = correctAnswersCount
   const totalQuestions = session.total_questions
   const percentage = Math.round((score / totalQuestions) * 100)
   const passed = session.passed

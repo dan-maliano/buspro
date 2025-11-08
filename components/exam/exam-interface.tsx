@@ -5,11 +5,12 @@ import type { Question, ExamConfig } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Clock, CheckCircle2, AlertCircle } from "lucide-react"
+import { Clock, CheckCircle2, AlertCircle, Home, UserPlus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import ExamResults from "./exam-results"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import Link from "next/link"
 
 type UserAnswerState = {
   questionId: string
@@ -234,7 +235,9 @@ export default function ExamInterface({
     let correctCount = 0
     const resultsData = questions.map((q, index) => {
       const userAnswer = userAnswers[index]
-      const isCorrect = userAnswer.selectedAnswer === q.correct_answer
+      const normalizedUserAnswer = userAnswer.selectedAnswer?.trim()
+      const normalizedCorrectAnswer = q.correct_answer?.trim()
+      const isCorrect = normalizedUserAnswer === normalizedCorrectAnswer
       if (isCorrect) correctCount++
       return {
         question: q,
@@ -250,11 +253,11 @@ export default function ExamInterface({
       <div className="min-h-screen bg-surface">
         <header className="bg-[#124734] text-white shadow-md">
           <div className="container mx-auto px-4 py-6">
-            <h1 className="text-3xl font-bold text-center">תוצאות המבחן</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-center">תוצאות המבחן</h1>
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-6 md:py-8">
           <div className="max-w-4xl mx-auto">
             <Alert className="mb-6 border-[#124734]">
               <AlertCircle className="h-4 w-4" />
@@ -264,36 +267,58 @@ export default function ExamInterface({
               </AlertDescription>
             </Alert>
 
-            <Card className={`mb-8 ${passed ? "border-green-500 border-2" : "border-red-500 border-2"}`}>
+            <Card className={`mb-6 md:mb-8 ${passed ? "border-green-500 border-2" : "border-red-500 border-2"}`}>
               <CardHeader>
                 <div className="text-center">
                   {passed ? (
                     <div className="flex flex-col items-center gap-2 mb-4">
-                      <CheckCircle2 className="h-16 w-16 text-green-500" />
-                      <h2 className="text-3xl font-bold text-green-600">עברת בהצלחה!</h2>
+                      <CheckCircle2 className="h-12 w-12 md:h-16 md:w-16 text-green-500" />
+                      <h2 className="text-2xl md:text-3xl font-bold text-green-600">עברת בהצלחה!</h2>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2 mb-4">
-                      <AlertCircle className="h-16 w-16 text-red-500" />
-                      <h2 className="text-3xl font-bold text-red-600">לא עברת הפעם</h2>
+                      <AlertCircle className="h-12 w-12 md:h-16 md:w-16 text-red-500" />
+                      <h2 className="text-2xl md:text-3xl font-bold text-red-600">לא עברת הפעם</h2>
                     </div>
                   )}
                 </div>
                 <CardTitle className="text-center">
-                  <div className="text-6xl font-bold text-[#124734] mb-2">
+                  <div className="text-5xl md:text-6xl font-bold text-[#124734] mb-2">
                     {correctCount}/{questions.length}
                   </div>
-                  <div className="text-2xl text-muted-foreground">{percentage}% נכון</div>
+                  <div className="text-xl md:text-2xl text-muted-foreground">{percentage}% נכון</div>
                 </CardTitle>
               </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-2 md:gap-4 text-center">
+                  <div className="p-3 md:p-4 bg-muted rounded-lg">
+                    <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 mx-auto mb-2 text-green-600" />
+                    <p className="text-xs md:text-sm text-muted-foreground">תשובות נכונות</p>
+                    <p className="text-base md:text-lg font-semibold text-green-600">{correctCount}</p>
+                  </div>
+                  <div className="p-3 md:p-4 bg-muted rounded-lg">
+                    <AlertCircle className="h-5 w-5 md:h-6 md:w-6 mx-auto mb-2 text-red-600" />
+                    <p className="text-xs md:text-sm text-muted-foreground">תשובות שגויות</p>
+                    <p className="text-base md:text-lg font-semibold text-red-600">{questions.length - correctCount}</p>
+                  </div>
+                  <div className="p-3 md:p-4 bg-muted rounded-lg">
+                    <Clock className="h-5 w-5 md:h-6 md:w-6 mx-auto mb-2 text-[#124734]" />
+                    <p className="text-xs md:text-sm text-muted-foreground">זמן כולל</p>
+                    <p className="text-base md:text-lg font-semibold">
+                      {Math.floor((Date.now() - examStartTime) / 60000)}:
+                      {(Math.floor((Date.now() - examStartTime) / 1000) % 60).toString().padStart(2, "0")}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
 
-            <Card className="mb-8">
+            <Card className="mb-6 md:mb-8">
               <CardHeader>
-                <CardTitle>סקירת שאלות</CardTitle>
+                <CardTitle className="text-xl md:text-2xl">סקירת שאלות</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   {resultsData.map((result, index) => {
                     const userAnswerText = getAnswerText(result.question, result.userAnswer)
                     const correctAnswerText = getAnswerText(result.question, result.question.correct_answer || "א")
@@ -305,40 +330,45 @@ export default function ExamInterface({
                           result.isCorrect ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
                         }`}
                       >
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-3 md:gap-4">
                           <div className="flex-shrink-0">
                             {result.isCorrect ? (
-                              <CheckCircle2 className="h-6 w-6 text-green-600" />
+                              <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
                             ) : (
-                              <AlertCircle className="h-6 w-6 text-red-600" />
+                              <AlertCircle className="h-5 w-5 md:h-6 md:w-6 text-red-600" />
                             )}
                           </div>
-                          <div className="flex-1">
-                            <p className="font-semibold mb-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold mb-3 text-sm md:text-base leading-relaxed">
                               {index + 1}. {result.question.question_text}
                             </p>
-                            <div className="space-y-2 text-sm">
+                            <div className="space-y-2 text-sm md:text-base">
                               <div className="flex flex-col gap-1">
-                                <span className="text-muted-foreground">התשובה שלך:</span>
+                                <span className="text-muted-foreground text-xs md:text-sm">התשובה שלך:</span>
                                 <div className={result.isCorrect ? "text-green-600" : "text-red-600"}>
                                   <span className="font-semibold">{result.userAnswer}</span>
-                                  {userAnswerText && <span className="mr-1">- {userAnswerText}</span>}
+                                  {userAnswerText && <span className="font-normal mr-1">- {userAnswerText}</span>}
                                 </div>
                               </div>
 
                               {!result.isCorrect && (
                                 <div className="flex flex-col gap-1">
-                                  <span className="text-muted-foreground">תשובה נכונה:</span>
+                                  <span className="text-muted-foreground text-xs md:text-sm">תשובה נכונה:</span>
                                   <div className="text-green-600">
                                     <span className="font-semibold">{result.question.correct_answer}</span>
-                                    {correctAnswerText && <span className="mr-1">- {correctAnswerText}</span>}
+                                    {correctAnswerText && (
+                                      <span className="font-normal mr-1">- {correctAnswerText}</span>
+                                    )}
                                   </div>
                                 </div>
                               )}
 
                               {result.question.explanation && (
-                                <div className="mt-2 p-3 bg-white rounded border">
-                                  <span className="font-semibold">הסבר:</span> {result.question.explanation}
+                                <div className="mt-3 p-3 bg-white rounded border">
+                                  <span className="font-semibold text-xs md:text-sm block mb-1">הסבר:</span>
+                                  <span className="text-xs md:text-sm leading-relaxed">
+                                    {result.question.explanation}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -351,12 +381,27 @@ export default function ExamInterface({
               </CardContent>
             </Card>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild className="flex-1 bg-[#124734] hover:bg-[#0d331f]" size="lg">
-                <a href="/">חזור לדף הבית</a>
+            <div className="flex flex-col gap-4 mt-6 pb-6">
+              <Button
+                asChild
+                className="w-full bg-[#124734] hover:bg-[#0d331f] min-h-[56px] h-auto py-4 text-base md:text-lg font-semibold touch-manipulation active:scale-95 transition-transform"
+                size="lg"
+              >
+                <Link href="/" className="flex items-center justify-center">
+                  <Home className="ml-2 h-6 w-6 flex-shrink-0" />
+                  <span>חזור לדף הבית</span>
+                </Link>
               </Button>
-              <Button asChild variant="outline" className="flex-1 bg-transparent" size="lg">
-                <a href="/auth/sign-up">הירשם לשמירת התקדמות</a>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full border-2 border-[#124734] text-[#124734] hover:bg-[#124734] hover:text-white min-h-[56px] h-auto py-4 text-base md:text-lg font-semibold bg-transparent touch-manipulation active:scale-95 transition-transform"
+                size="lg"
+              >
+                <Link href="/auth/sign-up" className="flex items-center justify-center">
+                  <UserPlus className="ml-2 h-6 w-6 flex-shrink-0" />
+                  <span>הירשם לשמירת התקדמות</span>
+                </Link>
               </Button>
             </div>
           </div>
