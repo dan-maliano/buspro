@@ -23,7 +23,7 @@ export default async function ProfilePage() {
     .from("exam_sessions")
     .select("*")
     .eq("user_id", user.id)
-    .eq("completed", true)
+    .not("end_time", "is", null)
 
   const totalExams = sessions?.length || 0
   const simulationExams = sessions?.filter((s) => s.exam_type === "simulation") || []

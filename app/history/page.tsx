@@ -22,7 +22,6 @@ export default async function HistoryPage() {
     .from("exam_sessions")
     .select("*")
     .eq("user_id", user.id)
-    .eq("completed", true)
     .not("end_time", "is", null)
     .order("created_at", { ascending: false })
 

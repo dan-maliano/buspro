@@ -165,7 +165,6 @@ export default function ExamInterface({
           end_time: new Date().toISOString(),
           score: correctCount,
           passed: examConfig.type === "simulation" ? passed : null,
-          completed: true, // Always mark as completed when exam is submitted
         })
         .eq("id", sessionId)
 
