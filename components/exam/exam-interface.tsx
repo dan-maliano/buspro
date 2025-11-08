@@ -133,23 +133,17 @@ export default function ExamInterface({
 
     const totalExamTimeSeconds = Math.floor((Date.now() - examStartTime) / 1000)
 
-    console.log("[v0] === EXAM SUBMISSION DEBUG ===")
-    console.log("[v0] userId:", userId, "sessionId:", sessionId)
-    console.log("[v0] Total questions:", questions.length)
+    console.log("[v0] === EXAM SUBMISSION ===")
     console.log("[v0] Total exam time:", totalExamTimeSeconds, "seconds")
 
     let correctCount = 0
     const answerRecords = questions.map((q, index) => {
       const userAnswer = userAnswers[index]
-
       const normalizedUserAnswer = userAnswer.selectedAnswer?.trim() || null
       const normalizedCorrectAnswer = q.correct_answer?.trim() || ""
-
       const isCorrect = normalizedUserAnswer === normalizedCorrectAnswer
 
-      if (isCorrect) {
-        correctCount++
-      }
+      if (isCorrect) correctCount++
 
       return {
         session_id: sessionId,
@@ -163,64 +157,28 @@ export default function ExamInterface({
     const errors = examConfig.totalQuestions - correctCount
     const passed = examConfig.type === "simulation" ? errors <= 8 : null
 
-    console.log("[v0] Correct:", correctCount, "Wrong:", errors, "Passed:", passed, "Time:", totalExamTimeSeconds)
+    console.log("[v0] Correct:", correctCount, "Errors:", errors, "Passed:", passed)
 
     if (userId && sessionId) {
       const supabase = createClient()
 
-      const { error: answersError } = await supabase.from("user_answers").insert(answerRecords)
+      localStorage.setItem(`exam_time_${sessionId}`, totalExamTimeSeconds.toString())
 
-      if (answersError) {
-        console.error("[v0] Failed to save answers:", answersError)
-      } else {
-        console.log("[v0] ✓ Answers saved")
-      }
+      await supabase.from("user_answers").insert(answerRecords)
 
-      const { error: sessionError, data: updatedSession } = await supabase
+      await supabase
         .from("exam_sessions")
         .update({
           end_time: new Date().toISOString(),
           score: correctCount,
           passed: passed,
-          time_spent_seconds: totalExamTimeSeconds, // Use the exact time we calculated
+          time_spent_seconds: totalExamTimeSeconds,
         })
         .eq("id", sessionId)
-        .select()
-        .single()
 
-      if (sessionError) {
-        console.error("[v0] Failed to update session:", sessionError)
-      } else {
-        console.log("[v0] ✓ Session updated successfully:", {
-          score: updatedSession.score,
-          time: updatedSession.time_spent_seconds,
-          passed: updatedSession.passed,
-        })
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      const { data: verifySession } = await supabase
-        .from("exam_sessions")
-        .select("score, time_spent_seconds, passed")
-        .eq("id", sessionId)
-        .single()
-
-      console.log("[v0] ✓ Verified database has:", verifySession)
-
-      if (verifySession && (!verifySession.time_spent_seconds || verifySession.time_spent_seconds === 0)) {
-        console.log("[v0] ⚠ Time not saved, forcing update...")
-        const { data: retryData } = await supabase
-          .from("exam_sessions")
-          .update({ time_spent_seconds: totalExamTimeSeconds })
-          .eq("id", sessionId)
-          .select()
-          .single()
-
-        console.log("[v0] ✓ Retry complete:", retryData)
-      }
+      console.log("[v0] ✓ Session saved with time:", totalExamTimeSeconds)
     } else {
-      console.log("[v0] Guest exam - results not saved")
+      console.log("[v0] Guest mode - results not saved")
     }
 
     setIsExamComplete(true)

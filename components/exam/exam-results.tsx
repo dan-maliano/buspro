@@ -30,34 +30,17 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
     async function fetchResults() {
       const supabase = createClient()
 
-      let retries = 0
-      let sessionData = null
+      const { data: sessionData, error } = await supabase.from("exam_sessions").select("*").eq("id", sessionId).single()
 
-      while (retries < 5) {
-        const { data, error } = await supabase.from("exam_sessions").select("*").eq("id", sessionId).single()
+      if (error) {
+        console.error("[v0] Error fetching session:", error)
+      }
 
-        if (error) {
-          console.error("[v0] Error fetching session:", error)
-          break
-        }
-
-        console.log(`[v0] Attempt ${retries + 1}: time_spent_seconds =`, data.time_spent_seconds)
-
-        if (data && data.time_spent_seconds && data.time_spent_seconds > 0) {
-          sessionData = data
-          console.log("[v0] ✓ Valid time data found:", data.time_spent_seconds, "seconds")
-          break
-        }
-
-        if (retries < 4) {
-          const waitTime = 500 * (retries + 1) // Incremental backoff: 500ms, 1000ms, 1500ms, 2000ms
-          console.log(`[v0] Time not ready, waiting ${waitTime}ms before retry...`)
-          await new Promise((resolve) => setTimeout(resolve, waitTime))
-          retries++
-        } else {
-          console.log("[v0] ⚠ Max retries reached, using data as-is")
-          sessionData = data
-          break
+      if (sessionData && (!sessionData.time_spent_seconds || sessionData.time_spent_seconds === 0)) {
+        const savedTime = localStorage.getItem(`exam_time_${sessionId}`)
+        if (savedTime) {
+          console.log("[v0] Using time from localStorage:", savedTime)
+          sessionData.time_spent_seconds = Number.parseInt(savedTime, 10)
         }
       }
 
@@ -75,10 +58,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
       }
 
       if (sessionData) {
-        console.log("[v0] === FINAL SESSION DATA ===")
-        console.log("[v0] Score:", sessionData.score)
-        console.log("[v0] Time:", sessionData.time_spent_seconds, "seconds")
-        console.log("[v0] Passed:", sessionData.passed)
+        console.log("[v0] Final time:", sessionData.time_spent_seconds, "seconds")
         setSession(sessionData)
       }
 
