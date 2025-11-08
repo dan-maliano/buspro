@@ -30,6 +30,7 @@ export type UserAnswer = {
   session_id: string
   question_id: string
   user_answer: "א" | "ב" | "ג" | "ד"
+  correct_answer_shuffled?: "א" | "ב" | "ג" | "ד" // Add field for shuffled correct answer
   is_correct: boolean
   time_spent_seconds: number | null
   created_at: string

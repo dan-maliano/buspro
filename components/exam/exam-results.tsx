@@ -151,10 +151,13 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                   const isCorrect = answer.is_correct
 
                   const userAnswerHebrew = convertToHebrew(answer.user_answer)
-                  const correctAnswerHebrew = convertToHebrew(question.correct_answer)
+                  const correctAnswerHebrew = convertToHebrew(answer.correct_answer_shuffled || question.correct_answer)
 
                   const userAnswerText = getAnswerText(question, answer.user_answer || "")
-                  const correctAnswerText = getAnswerText(question, question.correct_answer || "")
+                  const correctAnswerText = getAnswerText(
+                    question,
+                    answer.correct_answer_shuffled || question.correct_answer || "",
+                  )
 
                   return (
                     <div

@@ -141,22 +141,26 @@ export default function ExamInterface({
       const answerRecords = questions.map((q, index) => {
         const userAnswer = userAnswers[index]
 
-        const isCorrect = userAnswer.selectedAnswer === q.correct_answer
+        const userAnswerClean = (userAnswer.selectedAnswer || "").trim()
+        const correctAnswerClean = (q.correct_answer || "").trim()
+        const isCorrect = userAnswerClean === correctAnswerClean
 
         if (isCorrect) correctCount++
 
         console.log(`[v0] Q${index + 1}:`, {
           questionId: q.id,
-          userAnswer: userAnswer.selectedAnswer,
-          correctAnswer: q.correct_answer,
+          userAnswer: userAnswerClean,
+          correctAnswer: correctAnswerClean,
           isCorrect,
+          match: userAnswerClean === correctAnswerClean,
           questionText: q.question_text.substring(0, 50),
         })
 
         return {
           session_id: sessionId,
           question_id: q.id,
-          user_answer: userAnswer.selectedAnswer || "א",
+          user_answer: userAnswerClean || "א",
+          correct_answer_shuffled: correctAnswerClean,
           is_correct: isCorrect,
           time_spent_seconds: userAnswer.timeSpent,
         }
