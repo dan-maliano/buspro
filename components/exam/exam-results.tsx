@@ -208,16 +208,21 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="flex-1 bg-[#124734] hover:bg-[#0d331f]" size="lg">
+          <div className="flex flex-col gap-3 mt-6">
+            <Button asChild className="w-full bg-[#124734] hover:bg-[#0d331f] h-14 text-lg font-semibold" size="lg">
               <Link href="/">
-                <Home className="ml-2 h-5 w-5" />
+                <Home className="ml-2 h-6 w-6" />
                 חזור לדף הבית
               </Link>
             </Button>
-            <Button asChild variant="outline" className="flex-1 bg-transparent" size="lg">
+            <Button
+              asChild
+              variant="outline"
+              className="w-full border-2 border-[#124734] text-[#124734] hover:bg-[#124734] hover:text-white h-14 text-lg font-semibold bg-transparent"
+              size="lg"
+            >
               <Link href="/history">
-                <TrendingUp className="ml-2 h-5 w-5" />
+                <TrendingUp className="ml-2 h-6 w-6" />
                 צפה בהיסטוריה
               </Link>
             </Button>
