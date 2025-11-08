@@ -343,7 +343,7 @@ export default function ExamInterface({
                 {examConfig.type === "errors" && "תרגול טעויות"}
               </h1>
               <p className="text-sm opacity-90">
-                שאלה {currentQuestionIndex + 1} מתוך {questions.length}
+                שאלה {currentQuestionIndex + 1} מתוך {examConfig.totalQuestions}
               </p>
             </div>
             {examConfig.timeLimitSeconds && (
@@ -441,7 +441,7 @@ export default function ExamInterface({
               <CardTitle className="text-lg">ניווט מהיר</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-10 gap-2">
+              <div className="grid grid-cols-10 md:grid-cols-15 gap-2">
                 {questions.map((_, index) => {
                   const answered = userAnswers[index].selectedAnswer !== null
                   const isCurrent = index === currentQuestionIndex
@@ -450,7 +450,7 @@ export default function ExamInterface({
                     <button
                       key={index}
                       onClick={() => setCurrentQuestionIndex(index)}
-                      className={`aspect-square rounded-lg flex items-center justify-center font-semibold transition-all ${
+                      className={`aspect-square rounded-lg flex items-center justify-center font-semibold text-sm transition-all ${
                         isCurrent
                           ? "bg-[#124734] text-white ring-2 ring-[#124734] ring-offset-2"
                           : answered
