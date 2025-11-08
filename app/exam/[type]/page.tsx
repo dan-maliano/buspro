@@ -4,6 +4,7 @@ import ExamInterface from "@/components/exam/exam-interface"
 import { EXAM_CONFIGS } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { SIMULATION_DISTRIBUTION } from "@/lib/utils/exam-distribution"
 
 export default async function ExamPage({ params }: { params: Promise<{ type: string }> }) {
   const { type } = await params
@@ -28,41 +29,62 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
   let questionsToUse = []
 
   if (type === "simulation") {
-    const { data: allQuestions, error } = await supabase.from("questions").select("*").limit(500)
+    console.log("[v0] Loading simulation exam with proper chapter distribution")
 
-    if (error) {
-      console.error("[v0] Error fetching questions:", error)
+    const loadedQuestions = []
+
+    for (const dist of SIMULATION_DISTRIBUTION) {
+      // Try to load questions from this chapter
+      const { data: chapterQuestions, error } = await supabase
+        .from("questions")
+        .select("*")
+        .ilike("category", `%פרק ${dist.chapter}%`)
+        .limit(dist.count * 3) // Load 3x to have pool for random selection
+
+      if (error) {
+        console.error(`[v0] Error loading chapter ${dist.chapter}:`, error)
+        continue
+      }
+
+      if (chapterQuestions && chapterQuestions.length > 0) {
+        // Shuffle and take the required count
+        const shuffled = chapterQuestions.sort(() => Math.random() - 0.5)
+        const selected = shuffled.slice(0, dist.count)
+        loadedQuestions.push(...selected)
+        console.log(`[v0] Loaded ${selected.length}/${dist.count} questions from chapter ${dist.chapter}`)
+      } else {
+        console.warn(`[v0] No questions found for chapter ${dist.chapter}`)
+      }
     }
 
-    if (allQuestions && allQuestions.length > 0) {
-      const targetCount = 30
+    questionsToUse = loadedQuestions
 
-      if (allQuestions.length >= targetCount) {
-        // We have enough questions - shuffle and take 30
-        const shuffled = allQuestions.sort(() => Math.random() - 0.5)
-        questionsToUse = shuffled.slice(0, targetCount)
-      } else {
-        // Not enough questions - duplicate them to reach 30
-        questionsToUse = []
-        const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+    // If we don't have enough questions, fill with random ones
+    if (questionsToUse.length < 30) {
+      console.warn(`[v0] Only loaded ${questionsToUse.length}/30 questions, filling with random questions`)
 
-        while (questionsToUse.length < targetCount) {
-          const remaining = targetCount - questionsToUse.length
-          const toAdd = Math.min(remaining, shuffled.length)
-          questionsToUse.push(...shuffled.slice(0, toAdd))
+      const { data: randomQuestions } = await supabase.from("questions").select("*").limit(100)
 
-          // Reshuffle for next iteration if we need more
-          if (questionsToUse.length < targetCount) {
-            shuffled.sort(() => Math.random() - 0.5)
+      if (randomQuestions && randomQuestions.length > 0) {
+        const shuffled = randomQuestions.sort(() => Math.random() - 0.5)
+        const existingIds = new Set(questionsToUse.map((q) => q.id))
+
+        for (const q of shuffled) {
+          if (questionsToUse.length >= 30) break
+          if (!existingIds.has(q.id)) {
+            questionsToUse.push(q)
+            existingIds.add(q.id)
           }
         }
       }
-
-      console.log(`[v0] Loaded exactly ${questionsToUse.length} questions for simulation exam`)
-    } else {
-      console.error("[v0] No questions found in database")
     }
+
+    // Final shuffle to mix chapters
+    questionsToUse = questionsToUse.sort(() => Math.random() - 0.5).slice(0, 30)
+
+    console.log(`[v0] Final exam has ${questionsToUse.length} questions`)
   } else {
+    // Errors mode
     if (user) {
       const { data: incorrectAnswers } = await supabase
         .from("user_answers")

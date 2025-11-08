@@ -185,13 +185,11 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                               </span>
                               {userAnswerText && <span className="mr-1 md:mr-2">- {userAnswerText}</span>}
                             </p>
-                            {!isCorrect && (
-                              <p className="break-words">
-                                <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
-                                <span className="text-green-600 font-semibold">{correctAnswerHebrew}</span>
-                                {correctAnswerText && <span className="mr-1 md:mr-2">- {correctAnswerText}</span>}
-                              </p>
-                            )}
+                            <p className="break-words">
+                              <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
+                              <span className="text-green-600 font-semibold">{correctAnswerHebrew}</span>
+                              {correctAnswerText && <span className="mr-1 md:mr-2">- {correctAnswerText}</span>}
+                            </p>
                             {question.explanation && (
                               <p className="mt-2 p-3 bg-white rounded border break-words text-xs md:text-sm">
                                 <span className="font-semibold">הסבר:</span> {question.explanation}

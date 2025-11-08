@@ -130,7 +130,9 @@ export default function ExamInterface({
     if (isSubmitting) return
     setIsSubmitting(true)
 
-    console.log("[v0] Submitting exam, userId:", userId, "sessionId:", sessionId)
+    console.log("[v0] === EXAM SUBMISSION DEBUG ===")
+    console.log("[v0] userId:", userId, "sessionId:", sessionId)
+    console.log("[v0] Total questions:", questions.length)
 
     if (userId && sessionId) {
       const supabase = createClient()
@@ -138,13 +140,18 @@ export default function ExamInterface({
       let correctCount = 0
       const answerRecords = questions.map((q, index) => {
         const userAnswer = userAnswers[index]
-        // Compare using the shuffled correct_answer (already in Hebrew)
+
         const isCorrect = userAnswer.selectedAnswer === q.correct_answer
+
         if (isCorrect) correctCount++
 
-        console.log(
-          `[v0] Q${index + 1}: user=${userAnswer.selectedAnswer}, correct=${q.correct_answer}, match=${isCorrect}`,
-        )
+        console.log(`[v0] Q${index + 1}:`, {
+          questionId: q.id,
+          userAnswer: userAnswer.selectedAnswer,
+          correctAnswer: q.correct_answer,
+          isCorrect,
+          questionText: q.question_text.substring(0, 50),
+        })
 
         return {
           session_id: sessionId,
@@ -158,16 +165,12 @@ export default function ExamInterface({
       const errors = examConfig.totalQuestions - correctCount
       const passed = errors <= 8
 
-      console.log(
-        "[v0] Saving answers, count:",
-        answerRecords.length,
-        "score:",
+      console.log("[v0] Final results:", {
         correctCount,
-        "errors:",
         errors,
-        "passed:",
         passed,
-      )
+        totalQuestions: examConfig.totalQuestions,
+      })
 
       // Insert all answers
       const { error: answersError } = await supabase.from("user_answers").insert(answerRecords)
