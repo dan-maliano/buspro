@@ -28,21 +28,60 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
   let questionsToUse = []
 
   if (type === "simulation") {
-    console.log("[v0] Loading simulation exam with 30 random questions")
+    console.log("[v0] Loading simulation exam with proper chapter distribution")
 
-    const { data: allQuestions, error } = await supabase.from("questions").select("*").limit(100)
+    const SIMULATION_DISTRIBUTION = [
+      { chapter: 1, count: 6 },
+      { chapter: 2, count: 2 },
+      { chapter: 3, count: 2 },
+      { chapter: 4, count: 1 },
+      { chapter: 5, count: 3 },
+      { chapter: 6, count: 3 },
+      { chapter: 7, count: 3 },
+      { chapter: 8, count: 2 },
+      { chapter: 9, count: 2 },
+      { chapter: 10, count: 2 },
+      { chapter: 11, count: 2 },
+      { chapter: 12, count: 1 },
+      { chapter: 13, count: 1 },
+    ]
 
-    if (error) {
-      console.error("[v0] Error loading questions:", error)
-    } else if (allQuestions && allQuestions.length > 0) {
-      // Shuffle all questions
-      const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+    for (const dist of SIMULATION_DISTRIBUTION) {
+      const { data: chapterQuestions, error } = await supabase
+        .from("questions")
+        .select("*")
+        .eq("category", `פרק ${dist.chapter}`)
+        .limit(dist.count * 2) // Get extra in case we need to shuffle
 
-      // Take exactly 30 questions
-      questionsToUse = shuffled.slice(0, 30)
-
-      console.log(`[v0] Loaded ${questionsToUse.length} questions for exam`)
+      if (error) {
+        console.error(`[v0] Error loading questions from פרק ${dist.chapter}:`, error)
+      } else if (chapterQuestions && chapterQuestions.length > 0) {
+        // Shuffle and take exactly the required count
+        const shuffled = chapterQuestions.sort(() => Math.random() - 0.5)
+        const selected = shuffled.slice(0, dist.count)
+        questionsToUse.push(...selected)
+        console.log(`[v0] Loaded ${selected.length}/${dist.count} questions from פרק ${dist.chapter}`)
+      } else {
+        console.warn(`[v0] No questions found for פרק ${dist.chapter}`)
+      }
     }
+
+    // If we don't have enough questions, fill with random ones
+    if (questionsToUse.length < 30) {
+      console.warn(`[v0] Only ${questionsToUse.length}/30 questions loaded from chapters. Loading random questions...`)
+      const { data: randomQuestions } = await supabase
+        .from("questions")
+        .select("*")
+        .limit(30 - questionsToUse.length)
+
+      if (randomQuestions) {
+        questionsToUse.push(...randomQuestions)
+      }
+    }
+
+    // Final shuffle of all selected questions
+    questionsToUse = questionsToUse.sort(() => Math.random() - 0.5)
+    console.log(`[v0] Final exam has ${questionsToUse.length} questions`)
   } else {
     // Errors mode
     if (user) {
