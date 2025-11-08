@@ -441,7 +441,8 @@ export default function ExamInterface({
               <CardTitle className="text-lg">ניווט מהיר</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-10 md:grid-cols-15 gap-2">
+              {/* Updated grid to support 30 questions - 5 columns on mobile, 10 on tablet, 15 on desktop */}
+              <div className="grid grid-cols-5 sm:grid-cols-10 lg:grid-cols-15 gap-2">
                 {questions.map((_, index) => {
                   const answered = userAnswers[index].selectedAnswer !== null
                   const isCurrent = index === currentQuestionIndex

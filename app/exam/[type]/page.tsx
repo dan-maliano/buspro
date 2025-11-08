@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import ExamInterface from "@/components/exam/exam-interface"
 import { EXAM_CONFIGS } from "@/lib/types"
-import { SIMULATION_DISTRIBUTION } from "@/lib/utils/exam-distribution"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
@@ -29,44 +28,22 @@ export default async function ExamPage({ params }: { params: Promise<{ type: str
   let questionsToUse = []
 
   if (type === "simulation") {
-    console.log("[v0] Loading simulation exam questions...")
+    console.log("[v0] Loading 30 questions for simulation exam...")
 
-    for (const dist of SIMULATION_DISTRIBUTION) {
-      const { data: chapterQuestions, error } = await supabase
-        .from("questions")
-        .select("*")
-        .ilike("category", `%פרק ${dist.chapter}%`)
-        .limit(dist.count * 3)
+    const { data: allQuestions, error } = await supabase.from("questions").select("*").limit(100) // Get more than needed to ensure variety
 
-      if (error) {
-        console.error(`[v0] Error fetching questions for chapter ${dist.chapter}:`, error)
-      }
-
-      if (chapterQuestions && chapterQuestions.length > 0) {
-        const shuffled = chapterQuestions.sort(() => Math.random() - 0.5)
-        const selected = shuffled.slice(0, Math.min(dist.count, chapterQuestions.length))
-        questionsToUse.push(...selected)
-        console.log(`[v0] Loaded ${selected.length}/${dist.count} questions for chapter ${dist.chapter}`)
-      } else {
-        console.warn(`[v0] No questions found for chapter ${dist.chapter}`)
-      }
+    if (error) {
+      console.error("[v0] Error fetching questions:", error)
     }
 
-    if (questionsToUse.length < 30) {
-      console.log(`[v0] Only ${questionsToUse.length} questions loaded, fetching additional questions...`)
-      const { data: additionalQuestions } = await supabase
-        .from("questions")
-        .select("*")
-        .limit(30 - questionsToUse.length)
-
-      if (additionalQuestions) {
-        questionsToUse.push(...additionalQuestions)
-      }
+    if (allQuestions && allQuestions.length > 0) {
+      // Shuffle and select exactly 30 questions
+      const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+      questionsToUse = shuffled.slice(0, Math.min(30, allQuestions.length))
+      console.log(`[v0] Loaded ${questionsToUse.length} questions for simulation exam`)
+    } else {
+      console.error("[v0] No questions found in database")
     }
-
-    questionsToUse = questionsToUse.sort(() => Math.random() - 0.5)
-
-    console.log(`[v0] Total loaded: ${questionsToUse.length} questions for simulation exam`)
   } else {
     if (user) {
       const { data: incorrectAnswers } = await supabase
