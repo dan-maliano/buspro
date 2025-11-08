@@ -133,7 +133,9 @@ export default function ExamInterface({
 
     const totalExamTimeSeconds = Math.floor((Date.now() - examStartTime) / 1000)
 
-    console.log("[v0] === EXAM SUBMISSION ===")
+    console.log("[v0] 📝 === EXAM SUBMISSION START ===")
+    console.log("[v0] User ID:", userId)
+    console.log("[v0] Session ID:", sessionId)
     console.log("[v0] Total exam time:", totalExamTimeSeconds, "seconds")
     console.log("[v0] Exam start:", new Date(examStartTime).toISOString())
     console.log("[v0] Exam end:", new Date().toISOString())
@@ -159,23 +161,28 @@ export default function ExamInterface({
     const errors = examConfig.totalQuestions - correctCount
     const passed = examConfig.type === "simulation" ? errors <= 8 : null
 
-    console.log("[v0] Correct:", correctCount, "Errors:", errors, "Passed:", passed)
+    console.log("[v0] 📊 Results - Correct:", correctCount, "Errors:", errors, "Passed:", passed)
 
     if (userId && sessionId) {
       const supabase = createClient()
 
       localStorage.setItem(`exam_time_${sessionId}`, totalExamTimeSeconds.toString())
-      console.log("[v0] Saved time to localStorage:", totalExamTimeSeconds)
+      console.log("[v0] 💾 Saved time to localStorage:", totalExamTimeSeconds)
 
-      const { error: answersError } = await supabase.from("user_answers").insert(answerRecords)
+      console.log("[v0] 📤 Saving", answerRecords.length, "answers to database...")
+      const { data: answersData, error: answersError } = await supabase
+        .from("user_answers")
+        .insert(answerRecords)
+        .select()
 
       if (answersError) {
-        console.error("[v0] Error saving answers:", answersError)
+        console.error("[v0] ❌ Error saving answers:", answersError)
       } else {
-        console.log("[v0] ✓ Answers saved")
+        console.log("[v0] ✅ Answers saved successfully:", answersData?.length, "records")
       }
 
-      const { error: sessionError } = await supabase
+      console.log("[v0] 📤 Updating session with final results...")
+      const { data: sessionData, error: sessionError } = await supabase
         .from("exam_sessions")
         .update({
           end_time: new Date().toISOString(),
@@ -184,16 +191,19 @@ export default function ExamInterface({
           time_spent_seconds: totalExamTimeSeconds,
         })
         .eq("id", sessionId)
+        .select()
 
       if (sessionError) {
-        console.error("[v0] Error updating session:", sessionError)
+        console.error("[v0] ❌ Error updating session:", sessionError)
       } else {
-        console.log("[v0] ✓ Session updated with time:", totalExamTimeSeconds)
+        console.log("[v0] ✅ Session updated successfully:", sessionData)
       }
 
+      console.log("[v0] ⏳ Waiting for database commit...")
       await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log("[v0] ✅ === EXAM SUBMISSION COMPLETE ===")
     } else {
-      console.log("[v0] Guest mode - results not saved")
+      console.log("[v0] 👤 Guest mode - results not saved to database")
     }
 
     setIsExamComplete(true)
