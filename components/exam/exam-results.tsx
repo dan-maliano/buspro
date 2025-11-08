@@ -14,13 +14,18 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const [loading, setLoading] = useState(true)
 
   const convertToHebrew = (letter: string): string => {
+    const cleanLetter = letter?.trim().toUpperCase()
     const mapping: Record<string, string> = {
       A: "א",
       B: "ב",
       C: "ג",
       D: "ד",
+      א: "א",
+      ב: "ב",
+      ג: "ג",
+      ד: "ד",
     }
-    return mapping[letter] || letter
+    return mapping[cleanLetter] || cleanLetter || letter
   }
 
   useEffect(() => {
