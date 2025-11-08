@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import type { Question, ExamConfig } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import ExamResults from "./exam-results"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { shuffleQuestionAnswers } from "@/lib/utils/shuffle-answers"
 
 type UserAnswerState = {
   questionId: string
@@ -18,7 +19,7 @@ type UserAnswerState = {
 }
 
 export default function ExamInterface({
-  questions,
+  questions: originalQuestions,
   examConfig,
   userId,
 }: {
@@ -26,6 +27,10 @@ export default function ExamInterface({
   examConfig: ExamConfig
   userId: string | null
 }) {
+  const questions = useMemo(() => {
+    return originalQuestions.map((q) => shuffleQuestionAnswers(q))
+  }, [originalQuestions])
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [userAnswers, setUserAnswers] = useState<UserAnswerState[]>(
     questions.map((q) => ({ questionId: q.id, selectedAnswer: null, timeSpent: 0 })),
@@ -402,17 +407,13 @@ export default function ExamInterface({
 
               {/* Answer Options */}
               <div className="space-y-3">
-                {(["א", "ב", "ג", "ד"] as const).map((option, idx) => {
-                  const englishOption = ["A", "B", "C", "D"][idx]
-                  const optionText = currentQuestion[
-                    `option_${englishOption.toLowerCase()}` as keyof Question
-                  ] as string
-                  const isSelected = currentAnswer.selectedAnswer === option
+                {currentQuestion.options.map((option) => {
+                  const isSelected = currentAnswer.selectedAnswer === option.letter
 
                   return (
                     <button
-                      key={option}
-                      onClick={() => handleAnswerSelect(option)}
+                      key={option.letter}
+                      onClick={() => handleAnswerSelect(option.letter)}
                       className={`w-full text-right p-4 rounded-lg border-2 transition-all ${
                         isSelected ? "border-[#124734] bg-[#124734]/10" : "border-border hover:border-[#124734]/50"
                       }`}
@@ -423,9 +424,9 @@ export default function ExamInterface({
                             isSelected ? "bg-[#124734] text-white" : "bg-muted text-foreground"
                           }`}
                         >
-                          {option}
+                          {option.letter}
                         </div>
-                        <span className="text-lg">{optionText}</span>
+                        <span className="text-lg">{option.text}</span>
                       </div>
                     </button>
                   )
