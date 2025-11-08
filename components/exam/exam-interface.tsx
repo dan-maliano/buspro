@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import type { Question, ExamConfig } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,7 +36,8 @@ export default function ExamInterface({
   const [isExamComplete, setIsExamComplete] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [questionStartTime, setQuestionStartTime] = useState(Date.now())
+  const questionStartTimeRef = useRef<number>(Date.now())
+  const questionTimeIntervalsRef = useRef<Map<number, number>>(new Map())
   const router = useRouter()
 
   const currentQuestion = questions[currentQuestionIndex]
@@ -88,16 +89,49 @@ export default function ExamInterface({
   }, [examConfig.timeLimitSeconds, isExamComplete])
 
   useEffect(() => {
-    setQuestionStartTime(Date.now())
+    // Save time spent on previous question before switching
+    const now = Date.now()
+    const previousIndex = currentQuestionIndex
+
+    // Reset timer for new question
+    questionStartTimeRef.current = now
+  }, [currentQuestionIndex])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now()
+      const timeSpent = Math.floor((now - questionStartTimeRef.current) / 1000)
+
+      // Update the time for current question
+      setUserAnswers((prev) => {
+        const updated = [...prev]
+        updated[currentQuestionIndex] = {
+          ...updated[currentQuestionIndex],
+          timeSpent: (questionTimeIntervalsRef.current.get(currentQuestionIndex) || 0) + timeSpent,
+        }
+        return updated
+      })
+
+      // Reset start time
+      questionStartTimeRef.current = now
+    }, 1000) // Update every second
+
+    return () => clearInterval(interval)
   }, [currentQuestionIndex])
 
   const handleAnswerSelect = (answer: "א" | "ב" | "ג" | "ד") => {
-    const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000)
+    const now = Date.now()
+    const additionalTime = Math.floor((now - questionStartTimeRef.current) / 1000)
+    const totalTimeForQuestion = (questionTimeIntervalsRef.current.get(currentQuestionIndex) || 0) + additionalTime
+
+    // Store the total time
+    questionTimeIntervalsRef.current.set(currentQuestionIndex, totalTimeForQuestion)
+
     const newAnswers = [...userAnswers]
     newAnswers[currentQuestionIndex] = {
       ...newAnswers[currentQuestionIndex],
       selectedAnswer: answer,
-      timeSpent: newAnswers[currentQuestionIndex].timeSpent + timeSpent,
+      timeSpent: totalTimeForQuestion,
     }
     setUserAnswers(newAnswers)
 
