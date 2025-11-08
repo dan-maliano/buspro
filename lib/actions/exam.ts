@@ -11,37 +11,64 @@ export async function deleteExamSession(sessionId: string) {
   } = await supabase.auth.getUser()
 
   if (!user) {
+    console.error("[v0] Delete failed: User not authenticated")
     return { success: false, error: "User not authenticated" }
   }
 
+  console.log("[v0] Deleting session:", sessionId, "for user:", user.id)
+
   // Verify session belongs to user
-  const { data: session } = await supabase.from("exam_sessions").select("user_id").eq("id", sessionId).single()
+  const { data: session, error: sessionCheckError } = await supabase
+    .from("exam_sessions")
+    .select("user_id")
+    .eq("id", sessionId)
+    .single()
+
+  if (sessionCheckError) {
+    console.error("[v0] Error checking session:", sessionCheckError)
+    return { success: false, error: "Session not found" }
+  }
 
   if (!session) {
+    console.error("[v0] Session not found")
     return { success: false, error: "Session not found" }
   }
 
   if (session.user_id !== user.id) {
+    console.error("[v0] Unauthorized: session belongs to different user")
     return { success: false, error: "Unauthorized" }
   }
 
-  const { error: answersError } = await supabase.from("user_answers").delete().eq("session_id", sessionId)
+  const { error: answersError, count: answersCount } = await supabase
+    .from("user_answers")
+    .delete()
+    .eq("session_id", sessionId)
+    .select()
 
   if (answersError) {
     console.error("[v0] Error deleting answers:", answersError)
-    return { success: false, error: answersError.message }
+    return { success: false, error: "Failed to delete answers: " + answersError.message }
   }
 
-  const { error: sessionError } = await supabase.from("exam_sessions").delete().eq("id", sessionId)
+  console.log("[v0] Deleted", answersCount, "answers")
+
+  const { error: sessionError, count: sessionCount } = await supabase
+    .from("exam_sessions")
+    .delete()
+    .eq("id", sessionId)
+    .select()
 
   if (sessionError) {
     console.error("[v0] Error deleting session:", sessionError)
-    return { success: false, error: sessionError.message }
+    return { success: false, error: "Failed to delete session: " + sessionError.message }
   }
 
-  // Revalidate pages to update statistics
+  console.log("[v0] Deleted", sessionCount, "session(s)")
+
   revalidatePath("/history")
   revalidatePath("/profile")
+  revalidatePath("/")
 
+  console.log("[v0] Delete successful")
   return { success: true }
 }

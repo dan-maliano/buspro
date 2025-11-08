@@ -18,12 +18,18 @@ export default async function HistoryPage() {
     redirect("/auth/login")
   }
 
-  const { data: sessions } = await supabase
+  const { data: sessions, error: sessionsError } = await supabase
     .from("exam_sessions")
     .select("*")
     .eq("user_id", user.id)
     .not("end_time", "is", null)
     .order("created_at", { ascending: false })
+
+  console.log("[v0] Total sessions found:", sessions?.length)
+
+  if (sessionsError) {
+    console.error("[v0] Error fetching sessions:", sessionsError)
+  }
 
   // Calculate statistics only from completed exams
   const totalExams = sessions?.length || 0

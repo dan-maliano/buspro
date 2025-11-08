@@ -16,6 +16,7 @@ import {
 import { deleteExamSession } from "@/lib/actions/exam"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
 interface DeleteExamButtonProps {
   sessionId: string
@@ -23,22 +24,42 @@ interface DeleteExamButtonProps {
 
 export function DeleteExamButton({ sessionId }: DeleteExamButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
+  const { toast } = useToast()
 
   const handleDelete = async () => {
     setIsDeleting(true)
+    console.log("[v0] Deleting exam session:", sessionId)
+
     const result = await deleteExamSession(sessionId)
+    console.log("[v0] Delete result:", result)
 
     if (result.success) {
+      setIsOpen(false)
+
+      toast({
+        title: "המבחן נמחק בהצלחה",
+        description: "הסטטיסטיקות עודכנו בהתאם",
+      })
+
       router.refresh()
+
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
     } else {
-      alert("שגיאה במחיקת המבחן: " + result.error)
+      toast({
+        title: "שגיאה במחיקת המבחן",
+        description: result.error || "אנא נסה שוב",
+        variant: "destructive",
+      })
       setIsDeleting(false)
     }
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50">
           <Trash2 className="h-4 w-4" />
@@ -53,7 +74,7 @@ export function DeleteExamButton({ sessionId }: DeleteExamButtonProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>ביטול</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>ביטול</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeleting}

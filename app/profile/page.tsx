@@ -18,12 +18,17 @@ export default async function ProfilePage() {
     redirect("/auth/login")
   }
 
-  // Get user's exam statistics
-  const { data: sessions } = await supabase
+  const { data: sessions, error: sessionsError } = await supabase
     .from("exam_sessions")
     .select("*")
     .eq("user_id", user.id)
     .not("end_time", "is", null)
+
+  console.log("[v0] Profile - Total sessions:", sessions?.length)
+
+  if (sessionsError) {
+    console.error("[v0] Error fetching sessions in profile:", sessionsError)
+  }
 
   const totalExams = sessions?.length || 0
   const simulationExams = sessions?.filter((s) => s.exam_type === "simulation") || []
