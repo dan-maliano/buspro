@@ -30,11 +30,28 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
     async function fetchResults() {
       const supabase = createClient()
 
-      const { data: sessionData, error: sessionError } = await supabase
-        .from("exam_sessions")
-        .select("*")
-        .eq("id", sessionId)
-        .single()
+      let retries = 0
+      let sessionData = null
+
+      while (retries < 3) {
+        const { data, error } = await supabase.from("exam_sessions").select("*").eq("id", sessionId).single()
+
+        if (error) {
+          console.error("[v0] Error fetching session:", error)
+          break
+        }
+
+        // If time_spent_seconds is 0 or null, wait and retry
+        if (data && (data.time_spent_seconds === 0 || data.time_spent_seconds === null) && retries < 2) {
+          console.log(`[v0] Time not ready, retry ${retries + 1}/3...`)
+          await new Promise((resolve) => setTimeout(resolve, 500))
+          retries++
+          continue
+        }
+
+        sessionData = data
+        break
+      }
 
       const { data: answersData, error: answersError } = await supabase
         .from("user_answers")
@@ -45,15 +62,16 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true })
 
-      if (sessionError) {
-        console.error("[v0] Error fetching session:", sessionError)
-      }
-
       if (answersError) {
         console.error("[v0] Error fetching answers:", answersError)
       }
 
       if (sessionData) {
+        console.log("[v0] Final session data loaded:", {
+          score: sessionData.score,
+          time: sessionData.time_spent_seconds,
+          passed: sessionData.passed,
+        })
         setSession(sessionData)
       }
 
