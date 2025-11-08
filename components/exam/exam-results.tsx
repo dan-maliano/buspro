@@ -108,13 +108,23 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
 
   const getAnswerText = (question: Question, letter: string | null): string => {
     if (!letter) return ""
+
+    const normalizedLetter = letter.trim().toUpperCase()
+    let hebrewLetter = normalizedLetter
+
+    if (normalizedLetter === "A") hebrewLetter = "א"
+    else if (normalizedLetter === "B") hebrewLetter = "ב"
+    else if (normalizedLetter === "C") hebrewLetter = "ג"
+    else if (normalizedLetter === "D") hebrewLetter = "ד"
+
     const optionMap: Record<string, string> = {
       א: question.option_a || "",
       ב: question.option_b || "",
       ג: question.option_c || "",
       ד: question.option_d || "",
     }
-    return optionMap[letter] || ""
+
+    return optionMap[hebrewLetter] || ""
   }
 
   return (
@@ -223,9 +233,9 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                             {/* User's answer */}
                             <div className="flex flex-col gap-1">
                               <span className="text-muted-foreground text-xs md:text-sm">התשובה שלך:</span>
-                              <div className={`font-semibold ${isCorrect ? "text-green-600" : "text-red-600"}`}>
-                                {userAnswerLetter}
-                                {userAnswerText && <span className="font-normal"> - {userAnswerText}</span>}
+                              <div className={`${isCorrect ? "text-green-600" : "text-red-600"}`}>
+                                <span className="font-semibold">{userAnswerLetter}</span>
+                                {userAnswerText && <span className="font-normal mr-1">- {userAnswerText}</span>}
                               </div>
                             </div>
 
@@ -233,9 +243,9 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                             {!isCorrect && (
                               <div className="flex flex-col gap-1">
                                 <span className="text-muted-foreground text-xs md:text-sm">תשובה נכונה:</span>
-                                <div className="font-semibold text-green-600">
-                                  {correctAnswerLetter}
-                                  {correctAnswerText && <span className="font-normal"> - {correctAnswerText}</span>}
+                                <div className="text-green-600">
+                                  <span className="font-semibold">{correctAnswerLetter}</span>
+                                  {correctAnswerText && <span className="font-normal mr-1">- {correctAnswerText}</span>}
                                 </div>
                               </div>
                             )}
