@@ -216,6 +216,16 @@ export default function ExamInterface({
     return `${mins}:${secs.toString().padStart(2, "0")}`
   }
 
+  const getAnswerText = (question: Question, letter: string): string => {
+    const optionMap: Record<string, string> = {
+      א: question.option_a || "",
+      ב: question.option_b || "",
+      ג: question.option_c || "",
+      ד: question.option_d || "",
+    }
+    return optionMap[letter] || ""
+  }
+
   if (isExamComplete && sessionId) {
     return <ExamResults sessionId={sessionId} />
   }
@@ -284,52 +294,59 @@ export default function ExamInterface({
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {resultsData.map((result, index) => (
-                    <div
-                      key={index}
-                      className={`p-4 rounded-lg border-2 ${
-                        result.isCorrect ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0">
-                          {result.isCorrect ? (
-                            <CheckCircle2 className="h-6 w-6 text-green-600" />
-                          ) : (
-                            <AlertCircle className="h-6 w-6 text-red-600" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold mb-2">
-                            {index + 1}. {result.question.question_text}
-                          </p>
-                          <div className="space-y-1 text-sm">
-                            <p>
-                              <span className="text-muted-foreground">התשובה שלך:</span>{" "}
-                              <span
-                                className={
-                                  result.isCorrect ? "text-green-600 font-semibold" : "text-red-600 font-semibold"
-                                }
-                              >
-                                {result.userAnswer}
-                              </span>
+                  {resultsData.map((result, index) => {
+                    const userAnswerText = getAnswerText(result.question, result.userAnswer)
+                    const correctAnswerText = getAnswerText(result.question, result.question.correct_answer || "א")
+
+                    return (
+                      <div
+                        key={index}
+                        className={`p-4 rounded-lg border-2 ${
+                          result.isCorrect ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+                        }`}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0">
+                            {result.isCorrect ? (
+                              <CheckCircle2 className="h-6 w-6 text-green-600" />
+                            ) : (
+                              <AlertCircle className="h-6 w-6 text-red-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold mb-2">
+                              {index + 1}. {result.question.question_text}
                             </p>
-                            {!result.isCorrect && (
-                              <p>
-                                <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
-                                <span className="text-green-600 font-semibold">{result.question.correct_answer}</span>
-                              </p>
-                            )}
-                            {result.question.explanation && (
-                              <p className="mt-2 p-3 bg-white rounded border">
-                                <span className="font-semibold">הסבר:</span> {result.question.explanation}
-                              </p>
-                            )}
+                            <div className="space-y-2 text-sm">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-muted-foreground">התשובה שלך:</span>
+                                <div className={result.isCorrect ? "text-green-600" : "text-red-600"}>
+                                  <span className="font-semibold">{result.userAnswer}</span>
+                                  {userAnswerText && <span className="mr-1">- {userAnswerText}</span>}
+                                </div>
+                              </div>
+
+                              {!result.isCorrect && (
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-muted-foreground">תשובה נכונה:</span>
+                                  <div className="text-green-600">
+                                    <span className="font-semibold">{result.question.correct_answer}</span>
+                                    {correctAnswerText && <span className="mr-1">- {correctAnswerText}</span>}
+                                  </div>
+                                </div>
+                              )}
+
+                              {result.question.explanation && (
+                                <div className="mt-2 p-3 bg-white rounded border">
+                                  <span className="font-semibold">הסבר:</span> {result.question.explanation}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>

@@ -109,13 +109,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const getAnswerText = (question: Question, letter: string | null): string => {
     if (!letter) return ""
 
-    const normalizedLetter = letter.trim().toUpperCase()
-    let hebrewLetter = normalizedLetter
-
-    if (normalizedLetter === "A") hebrewLetter = "א"
-    else if (normalizedLetter === "B") hebrewLetter = "ב"
-    else if (normalizedLetter === "C") hebrewLetter = "ג"
-    else if (normalizedLetter === "D") hebrewLetter = "ד"
+    const normalizedLetter = letter.trim()
 
     const optionMap: Record<string, string> = {
       א: question.option_a || "",
@@ -124,17 +118,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
       ד: question.option_d || "",
     }
 
-    console.log("[v0] Question:", question.question_text?.substring(0, 50))
-    console.log("[v0] Letter:", letter, "→ Hebrew:", hebrewLetter)
-    console.log("[v0] Options:", {
-      א: question.option_a,
-      ב: question.option_b,
-      ג: question.option_c,
-      ד: question.option_d,
-    })
-    console.log("[v0] Result text:", optionMap[hebrewLetter])
-
-    return optionMap[hebrewLetter] || ""
+    return optionMap[normalizedLetter] || ""
   }
 
   return (
