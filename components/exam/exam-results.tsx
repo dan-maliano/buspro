@@ -113,6 +113,17 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const passed = session.passed
   const totalTime = session.time_spent_seconds || answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0)
 
+  console.log("[v0] === RESULTS DISPLAY ===")
+  console.log("[v0] Score from DB:", session.score)
+  console.log("[v0] Total questions:", totalQuestions)
+  console.log("[v0] Percentage:", percentage)
+  console.log("[v0] Time from DB:", session.time_spent_seconds)
+  console.log(
+    "[v0] Calculated time from answers:",
+    answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0),
+  )
+  console.log("[v0] Final time used:", totalTime)
+
   const getAnswerText = (question: Question, letter: string | null): string => {
     if (!letter) return ""
     const optionMap: Record<string, string> = {

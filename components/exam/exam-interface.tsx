@@ -130,51 +130,54 @@ export default function ExamInterface({
     console.log("[v0] Total questions:", questions.length)
     console.log("[v0] Total exam time:", totalExamTimeSeconds, "seconds")
 
+    let correctCount = 0
+    const answerRecords = questions.map((q, index) => {
+      const userAnswer = userAnswers[index]
+
+      const normalizedUserAnswer = userAnswer.selectedAnswer?.trim() || null
+      const normalizedCorrectAnswer = q.correct_answer?.trim() || ""
+
+      const isCorrect = normalizedUserAnswer === normalizedCorrectAnswer
+
+      if (isCorrect) {
+        correctCount++
+      }
+
+      console.log(`[v0] Q${index + 1}:`, {
+        questionText: q.question_text?.substring(0, 50),
+        userAnswer: normalizedUserAnswer,
+        correctAnswer: normalizedCorrectAnswer,
+        isCorrect,
+        match: normalizedUserAnswer === normalizedCorrectAnswer,
+      })
+
+      return {
+        session_id: sessionId,
+        question_id: q.id,
+        user_answer: normalizedUserAnswer,
+        is_correct: isCorrect,
+        time_spent_seconds: userAnswer.timeSpent || 0,
+      }
+    })
+
+    const errors = examConfig.totalQuestions - correctCount
+    const passed = examConfig.type === "simulation" ? errors <= 8 : null
+
+    console.log("[v0] === FINAL CALCULATION ===")
+    console.log("[v0] Correct answers:", correctCount)
+    console.log("[v0] Wrong answers:", errors)
+    console.log("[v0] Passed:", passed)
+    console.log("[v0] Total time:", totalExamTimeSeconds, "seconds")
+
     if (userId && sessionId) {
       const supabase = createClient()
-
-      let correctCount = 0
-      const answerRecords = questions.map((q, index) => {
-        const userAnswer = userAnswers[index]
-
-        const isCorrect = userAnswer.selectedAnswer === q.correct_answer
-
-        if (isCorrect) correctCount++
-
-        console.log(`[v0] Q${index + 1}:`, {
-          questionId: q.id,
-          questionText: q.question_text?.substring(0, 50),
-          userAnswer: userAnswer.selectedAnswer,
-          correctAnswer: q.correct_answer,
-          isCorrect,
-        })
-
-        return {
-          session_id: sessionId,
-          question_id: q.id,
-          user_answer: userAnswer.selectedAnswer || null,
-          is_correct: isCorrect,
-          time_spent_seconds: userAnswer.timeSpent || Math.floor(totalExamTimeSeconds / questions.length),
-        }
-      })
-
-      const errors = examConfig.totalQuestions - correctCount
-      const passed = errors <= 8
-
-      console.log("[v0] Final results:", {
-        correctCount,
-        errors,
-        passed,
-        totalQuestions: examConfig.totalQuestions,
-        totalTime: totalExamTimeSeconds,
-      })
 
       const { error: answersError } = await supabase.from("user_answers").insert(answerRecords)
 
       if (answersError) {
         console.error("[v0] Failed to save answers:", answersError)
       } else {
-        console.log("[v0] Answers saved successfully")
+        console.log("[v0] ✓ Answers saved successfully")
       }
 
       const { error: sessionError } = await supabase
@@ -182,7 +185,7 @@ export default function ExamInterface({
         .update({
           end_time: new Date().toISOString(),
           score: correctCount,
-          passed: examConfig.type === "simulation" ? passed : null,
+          passed: passed,
           time_spent_seconds: totalExamTimeSeconds,
         })
         .eq("id", sessionId)
@@ -190,8 +193,16 @@ export default function ExamInterface({
       if (sessionError) {
         console.error("[v0] Failed to update session:", sessionError)
       } else {
-        console.log("[v0] Session updated successfully")
+        console.log("[v0] ✓ Session updated with score:", correctCount, "time:", totalExamTimeSeconds)
       }
+
+      const { data: verifySession } = await supabase
+        .from("exam_sessions")
+        .select("score, time_spent_seconds, passed")
+        .eq("id", sessionId)
+        .single()
+
+      console.log("[v0] Verification - saved session data:", verifySession)
     } else {
       console.log("[v0] Guest exam completed - results not saved")
     }
