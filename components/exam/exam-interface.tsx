@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import type { Question, ExamConfig } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import ExamResults from "./exam-results"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { shuffleQuestionAnswers } from "@/lib/utils/shuffle-answers"
 
 type UserAnswerState = {
   questionId: string
@@ -19,7 +18,7 @@ type UserAnswerState = {
 }
 
 export default function ExamInterface({
-  questions: originalQuestions,
+  questions,
   examConfig,
   userId,
 }: {
@@ -27,10 +26,6 @@ export default function ExamInterface({
   examConfig: ExamConfig
   userId: string | null
 }) {
-  const questions = useMemo(() => {
-    return originalQuestions.map((q) => shuffleQuestionAnswers(q))
-  }, [originalQuestions])
-
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [userAnswers, setUserAnswers] = useState<UserAnswerState[]>(
     questions.map((q) => ({ questionId: q.id, selectedAnswer: null, timeSpent: 0 })),
@@ -46,7 +41,6 @@ export default function ExamInterface({
   const currentQuestion = questions[currentQuestionIndex]
   const currentAnswer = userAnswers[currentQuestionIndex]
 
-  // Initialize exam session
   useEffect(() => {
     async function initSession() {
       if (!userId) {
@@ -76,7 +70,6 @@ export default function ExamInterface({
     initSession()
   }, [userId, examConfig])
 
-  // Timer countdown
   useEffect(() => {
     if (!examConfig.timeLimitSeconds || isExamComplete) return
 
@@ -93,7 +86,6 @@ export default function ExamInterface({
     return () => clearInterval(interval)
   }, [examConfig.timeLimitSeconds, isExamComplete])
 
-  // Track time spent per question
   useEffect(() => {
     setQuestionStartTime(Date.now())
   }, [currentQuestionIndex])
@@ -111,7 +103,7 @@ export default function ExamInterface({
     if (currentQuestionIndex < questions.length - 1) {
       setTimeout(() => {
         setCurrentQuestionIndex(currentQuestionIndex + 1)
-      }, 300) // 300ms delay to show selection feedback
+      }, 300)
     }
   }
 
@@ -145,24 +137,22 @@ export default function ExamInterface({
       const answerRecords = questions.map((q, index) => {
         const userAnswer = userAnswers[index]
 
-        const userAnswerClean = (userAnswer.selectedAnswer || "").trim()
-        const correctAnswerClean = (q.correct_answer || "").trim()
-        const isCorrect = userAnswerClean === correctAnswerClean
+        const isCorrect = userAnswer.selectedAnswer === q.correct_answer
 
         if (isCorrect) correctCount++
 
         console.log(`[v0] Q${index + 1}:`, {
           questionId: q.id,
           questionText: q.question_text?.substring(0, 50),
-          userAnswer: userAnswerClean,
-          correctAnswer: correctAnswerClean,
+          userAnswer: userAnswer.selectedAnswer,
+          correctAnswer: q.correct_answer,
           isCorrect,
         })
 
         return {
           session_id: sessionId,
           question_id: q.id,
-          user_answer: userAnswerClean || null,
+          user_answer: userAnswer.selectedAnswer || null,
           is_correct: isCorrect,
           time_spent_seconds: userAnswer.timeSpent || Math.floor(totalExamTimeSeconds / questions.length),
         }
@@ -420,7 +410,12 @@ export default function ExamInterface({
               )}
 
               <div className="space-y-3">
-                {currentQuestion.options.map((option) => {
+                {[
+                  { letter: "א" as const, text: currentQuestion.option_a },
+                  { letter: "ב" as const, text: currentQuestion.option_b },
+                  { letter: "ג" as const, text: currentQuestion.option_c },
+                  { letter: "ד" as const, text: currentQuestion.option_d },
+                ].map((option) => {
                   const isSelected = currentAnswer.selectedAnswer === option.letter
 
                   return (

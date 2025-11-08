@@ -113,15 +113,15 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const passed = session.passed
   const totalTime = session.time_spent_seconds || answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0)
 
-  const getAnswerText = (question: Question, letter: string): string => {
-    const hebrewLetter = convertToHebrew(letter)
+  const getAnswerText = (question: Question, letter: string | null): string => {
+    if (!letter) return ""
     const optionMap: Record<string, string> = {
       א: question.option_a || "",
       ב: question.option_b || "",
       ג: question.option_c || "",
       ד: question.option_d || "",
     }
-    const text = optionMap[hebrewLetter] || ""
+    const text = optionMap[letter] || ""
     return text.length > 100 ? text.substring(0, 100) + "..." : text
   }
 
@@ -202,15 +202,15 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                   const question = answer.question
                   const isCorrect = answer.is_correct
 
-                  const userAnswerHebrew = convertToHebrew(answer.user_answer)
-                  const correctAnswerHebrew = convertToHebrew(question.correct_answer)
+                  const userAnswerLetter = answer.user_answer || ""
+                  const correctAnswerLetter = question.correct_answer || ""
 
-                  const userAnswerText = getAnswerText(question, answer.user_answer || "")
-                  const correctAnswerText = getAnswerText(question, question.correct_answer || "")
+                  const userAnswerText = getAnswerText(question, userAnswerLetter)
+                  const correctAnswerText = getAnswerText(question, correctAnswerLetter)
 
                   console.log(`[v0] Displaying Q${index + 1}:`, {
-                    userAnswerHebrew,
-                    correctAnswerHebrew,
+                    userAnswerLetter,
+                    correctAnswerLetter,
                     isCorrect,
                     fromDatabase: answer.is_correct,
                   })
@@ -240,15 +240,17 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
                               <span
                                 className={isCorrect ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}
                               >
-                                {userAnswerHebrew}
+                                {userAnswerLetter}
                               </span>
                               {userAnswerText && <span className="mr-1 md:mr-2">- {userAnswerText}</span>}
                             </p>
-                            <p className="break-words">
-                              <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
-                              <span className="text-green-600 font-semibold">{correctAnswerHebrew}</span>
-                              {correctAnswerText && <span className="mr-1 md:mr-2">- {correctAnswerText}</span>}
-                            </p>
+                            {!isCorrect && (
+                              <p className="break-words">
+                                <span className="text-muted-foreground">תשובה נכונה:</span>{" "}
+                                <span className="text-green-600 font-semibold">{correctAnswerLetter}</span>
+                                {correctAnswerText && <span className="mr-1 md:mr-2">- {correctAnswerText}</span>}
+                              </p>
+                            )}
                             {question.explanation && (
                               <p className="mt-2 p-3 bg-white rounded border break-words text-xs md:text-sm">
                                 <span className="font-semibold">הסבר:</span> {question.explanation}
