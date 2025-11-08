@@ -124,6 +124,16 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
       ד: question.option_d || "",
     }
 
+    console.log("[v0] Question:", question.question_text?.substring(0, 50))
+    console.log("[v0] Letter:", letter, "→ Hebrew:", hebrewLetter)
+    console.log("[v0] Options:", {
+      א: question.option_a,
+      ב: question.option_b,
+      ג: question.option_c,
+      ד: question.option_d,
+    })
+    console.log("[v0] Result text:", optionMap[hebrewLetter])
+
     return optionMap[hebrewLetter] || ""
   }
 
