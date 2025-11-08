@@ -197,6 +197,8 @@ export default function ExamInterface({
         console.log("[v0] ✓ Session updated with score:", correctCount, "time:", totalExamTimeSeconds)
       }
 
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
       const { data: verifySession } = await supabase
         .from("exam_sessions")
         .select("score, time_spent_seconds, passed")
