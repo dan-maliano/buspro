@@ -367,18 +367,17 @@ export default function ExamInterface({
               <div className="space-y-3">
                 {/* Badges row */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full whitespace-nowrap">
-                    {currentQuestion.category}
-                  </span>
                   <span className="text-sm font-semibold bg-[#124734] text-white px-3 py-1 rounded-full whitespace-nowrap md:hidden">
                     שאלה מספר {currentQuestionIndex + 1}
+                  </span>
+                  <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full whitespace-nowrap">
+                    {currentQuestion.category}
                   </span>
                 </div>
 
                 {/* Question title - full width */}
                 <CardTitle className="text-xl leading-relaxed">{currentQuestion.question_text}</CardTitle>
               </div>
-              {/* </CHANGE> */}
             </CardHeader>
             <CardContent>
               {currentQuestion.question_image_url && (
