@@ -117,7 +117,7 @@ export default function ExamResults({ sessionId }: { sessionId: string }) {
   const totalQuestions = session.total_questions
   const percentage = Math.round((score / totalQuestions) * 100)
   const passed = session.passed
-  const totalTime = answers.reduce((sum, a) => sum + (a.time_spent_seconds || 0), 0)
+  const totalTime = session.time_spent_seconds || 0
 
   const getAnswerText = (question: Question, letter: string | null): string => {
     if (!letter) return ""
